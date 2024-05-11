@@ -2,7 +2,9 @@ package org.proyectsgcs.springcloud.msvc.medicamento.models.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "categorias_medicamento")
 public class CategoriaMedicamento {
@@ -13,19 +15,4 @@ public class CategoriaMedicamento {
     @NotEmpty
     private String nombreCategoria; //analgésicos, antibióticos, vitaminas
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombreCategoria() {
-        return nombreCategoria;
-    }
-
-    public void setNombreCategoria(String nombreCategoria) {
-        this.nombreCategoria = nombreCategoria;
-    }
 }

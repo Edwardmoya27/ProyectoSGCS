@@ -13,25 +13,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/medicamento")
+@RequestMapping("/api/medicamentos")
 public class MedicamentoController {
     @Autowired
     private MedicamentoService service;
+
     @GetMapping
     public List<Medicamento> listar(){
         return service.listar();
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle (@PathVariable Long id){
-        Optional<Medicamento> postulaOptional = service.porId(id);
-        if(postulaOptional.isPresent()){
-
+        Optional<Medicamento> medicamentoOptional = service.porId(id);
+        if(medicamentoOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
-                    Collections.singletonMap("Mensaje", "SI existe el estudiante "));
+                    Collections.singletonMap("Mensaje", "No existe el medicamento con el ID " + id));
         }
-        return  ResponseEntity.badRequest().body(
-                Collections.singletonMap("Mensaje", "NO existe el estudiante "));
+        return ResponseEntity.ok().body(medicamentoOptional.get());
     }
+
     @PostMapping
     public ResponseEntity<?> crear(@Valid @RequestBody Medicamento medicamento, BindingResult result){
 
@@ -43,20 +44,20 @@ public class MedicamentoController {
         if(result.hasErrors()){
             return Validando(result);
         }
-        Optional<Medicamento> pos = service.porId(id);
-        if(pos.isPresent()){
-            Medicamento postulAux = pos.get();
-            postulAux.setNombre(medicamento.getNombre());
-            postulAux.setDescripcion(medicamento.getDescripcion());
-            postulAux.setPresentacion(medicamento.getPresentacion());
-            postulAux.setFabricante(medicamento.getFabricante());
-            postulAux.setFechaVencimiento(medicamento.getFechaVencimiento());
-            postulAux.setPrecio(medicamento.getPrecio());
-            postulAux.setStockDisponible(medicamento.getStockDisponible());
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(postulAux));
+        Optional<Medicamento> medicamentoOptional = service.porId(id);
+        if(medicamentoOptional.isEmpty()){
+            return ResponseEntity.badRequest().body(
+                    Collections.singletonMap("Mensaje", "No existe el medicamento con el ID " + id));
         }
-        return ResponseEntity.notFound().build();
+        Medicamento medicamentoDB = medicamentoOptional.get();
+        medicamentoDB.setNombre(medicamento.getNombre());
+        medicamentoDB.setDescripcion(medicamento.getDescripcion());
+        medicamentoDB.setPresentacion(medicamento.getPresentacion());
+        medicamentoDB.setFabricante(medicamento.getFabricante());
+        medicamentoDB.setFechaVencimiento(medicamento.getFechaVencimiento());
+        medicamentoDB.setPrecio(medicamento.getPrecio());
+        medicamentoDB.setStockDisponible(medicamento.getStockDisponible());
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(medicamentoDB));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id){

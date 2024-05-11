@@ -2,103 +2,41 @@ package org.proyectsgcs.springcloud.msvc.medicamento.models.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
+@Data
 @Entity
 @Table(name = "medicamentos")
 public class Medicamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty
+
+    @NotEmpty(message = "El nombre del medicamento no puede estar vacío")
     private String nombre;
+
     private String descripcion;
+
     private String presentacion;
-    @NotEmpty
+
+    @NotEmpty(message = "El fabricante del medicamento no puede estar vacío")
     private String fabricante;
-    @NotEmpty
+
+    @NotNull(message = "La fecha de vencimiento del medicamento es obligatoria")
     @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date fechaVencimiento;
-    @NotEmpty
-    @Positive
+
+    @Positive(message = "El precio del medicamento debe ser un número positivo")
     private double precio;
-    @NotEmpty
+
+    @NotNull(message = "La categoría del medicamento es obligatoria")
     @ManyToOne
-    private CategoriaMedicamento nombreCategoria;
-    @NotEmpty
-    @PositiveOrZero
+    private CategoriaMedicamento categoriaMedicamento;
+
+    @PositiveOrZero(message = "El stock disponible del medicamento debe ser un número positivo o cero")
     private int stockDisponible;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getPresentacion() {
-        return presentacion;
-    }
-
-    public void setPresentacion(String presentacion) {
-        this.presentacion = presentacion;
-    }
-
-    public String getFabricante() {
-        return fabricante;
-    }
-
-    public void setFabricante(String fabricante) {
-        this.fabricante = fabricante;
-    }
-
-    public Date getFechaVencimiento() {
-        return fechaVencimiento;
-    }
-
-    public void setFechaVencimiento(Date fechaVencimiento) {
-        this.fechaVencimiento = fechaVencimiento;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
-    public int getStockDisponible() {
-        return stockDisponible;
-    }
-
-    public void setStockDisponible(int stockDisponible) {
-        this.stockDisponible = stockDisponible;
-    }
-
-    public CategoriaMedicamento getNombreCategoria() {
-        return nombreCategoria;
-    }
-
-    public void setNombreCategoria(CategoriaMedicamento nombreCategoria) {
-        this.nombreCategoria = nombreCategoria;
-    }
 }

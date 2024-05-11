@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/categoriaMedicamento")
+@RequestMapping("/api/categorias")
 public class CategoriaMedicamentoController {
     @Autowired
     private CategoriaMedicamentoService service;
@@ -26,7 +26,7 @@ public class CategoriaMedicamentoController {
         if(postulaOptional.isPresent()){
 
             return ResponseEntity.badRequest().body(
-                    Collections.singletonMap("Mensaje", "SI Categoria"));
+                    Collections.singletonMap("Mensaje", "SI existe Categoria"));
         }
         return  ResponseEntity.badRequest().body(
                 Collections.singletonMap("Mensaje", "NO existe Categoria "));
