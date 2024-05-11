@@ -86,7 +86,7 @@ public class CitasController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/medicos/{idMedico}")
+    @GetMapping("/medico/{idMedico}")
     public ResponseEntity<?> listarCitasPorIdMedico(@PathVariable Long idMedico){
         try {
            return ResponseEntity.ok().body(citasService.obtenerCitasPorIdMedico(idMedico));
