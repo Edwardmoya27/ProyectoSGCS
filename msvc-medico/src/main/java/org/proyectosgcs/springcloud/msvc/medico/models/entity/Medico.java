@@ -1,6 +1,5 @@
 package org.proyectosgcs.springcloud.msvc.medico.models.entity;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;

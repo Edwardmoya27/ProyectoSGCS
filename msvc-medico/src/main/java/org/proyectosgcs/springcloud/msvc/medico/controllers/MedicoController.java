@@ -1,5 +1,9 @@
 package org.proyectosgcs.springcloud.msvc.medico.controllers;
 
+import org.proyectosgcs.springcloud.msvc.medico.Clients.CitaClientRest;
+import org.proyectosgcs.springcloud.msvc.medico.Clients.PacienteClientRest;
+import org.proyectosgcs.springcloud.msvc.medico.models.Cita;
+import org.proyectosgcs.springcloud.msvc.medico.models.Paciente;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Especialidad;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Medico;
 import org.proyectosgcs.springcloud.msvc.medico.services.EspecialidadService;
@@ -22,6 +26,10 @@ public class MedicoController {
     private MedicoService service;
     @Autowired
     private EspecialidadService especialidadService;
+    @Autowired
+    private PacienteClientRest pacienteClientRest;
+    @Autowired
+    private CitaClientRest citaClientRest;
 
     @GetMapping
     public List<Medico> listar(){
@@ -71,6 +79,48 @@ public class MedicoController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+
+    //Metodos remotos
+
+    @GetMapping("/pacientes/{idPaciente}")
+    public ResponseEntity<?> obtenerPaciente(@PathVariable Long idPaciente){
+        Paciente pacienteApi = pacienteClientRest.obtenerPacientePorId(idPaciente);
+        if (pacienteApi.getId() == null){
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("error", "No existe el paciente con el ID "+idPaciente);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+        }
+        Map<String, String> response = new HashMap<>();
+        response.put("nombre", pacienteApi.getNombres() + " " + pacienteApi.getApellidos());
+        return ResponseEntity.ok().body(response);
+    }
+
+    //Listado de citas de un medico ID
+    @GetMapping("/{idMedico}/citas")
+    public ResponseEntity<?> obtenerCitasIdMedico(@PathVariable Long idMedico){
+        Optional<Medico> medicoOptional = service.obtenerMedico(idMedico);
+        if(medicoOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("message","No existe el medico con el ID "+idMedico));
+        List<Cita> listadoCitasIdMedicoApi = citaClientRest.obtenerCitasPorIdMedico(idMedico);
+        if (listadoCitasIdMedicoApi.isEmpty()){
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("error", "No existen citas para el medico");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+        }
+        return ResponseEntity.ok().body(listadoCitasIdMedicoApi);
+    }
+
+    @GetMapping("/citas/{idCita}")
+    public ResponseEntity<?> obtenerCitaIdPaciente(@PathVariable Long idCita){
+        Cita citaApi = citaClientRest.obtenerCitaPorId(idCita);
+        if (citaApi.getId() == null){
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("error", "No existe la cita con el ID "+idCita);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+        }
+        return ResponseEntity.ok().body(citaApi);
     }
 
 }
