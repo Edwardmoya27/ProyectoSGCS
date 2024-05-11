@@ -22,4 +22,7 @@ public interface CitasService {
 
     Optional<Pago> asignarPago(Pago pago, Long citaId);
     Optional<Pago> crearPago(Pago postula, Long citaId);
+
+    //otros metodos
+    List<Cita> obtenerCitasPorIdPaciente(Long id);
 }

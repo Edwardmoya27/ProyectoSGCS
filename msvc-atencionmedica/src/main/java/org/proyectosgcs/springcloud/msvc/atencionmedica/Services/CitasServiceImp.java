@@ -3,12 +3,15 @@ package org.proyectosgcs.springcloud.msvc.atencionmedica.Services;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Clients.PagoClientRest;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.CitaPago;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Repositories.CitasRepository;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Repositories.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.PrivateKey;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,8 @@ public class CitasServiceImp implements CitasService {
     private CitasRepository CitasRep;
     @Autowired
     private PagoClientRest client;
+    @Autowired
+    private PacienteRepository pacienteRepository;
 
     @Override
     public List<Cita> listarCitas() {
@@ -84,5 +89,10 @@ public class CitasServiceImp implements CitasService {
             return Optional.of(newPago);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<Cita> obtenerCitasPorIdPaciente(Long id) {
+        return CitasRep.obtenerCitasPorIdPaciente(id);
     }
 }

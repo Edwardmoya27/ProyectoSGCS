@@ -25,8 +25,9 @@ public class Cita {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime fechaHora;
 
-    @NotBlank(message = "El nombre del paciente no puede estar en blanco")
-    private String paciente;
+    @ManyToOne
+    @JoinColumn(name = "paciente_id", referencedColumnName = "id")
+    private Paciente paciente;
 
     @NotBlank(message = "El nombre del médico no puede estar en blanco")
     private String medico;
@@ -39,7 +40,6 @@ public class Cita {
 
     @OneToOne(mappedBy = "cita")
     private CitaPago citaPago;
-
 
     //constructor para asignar pago a una cita
     public Cita () {

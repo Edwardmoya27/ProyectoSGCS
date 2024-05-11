@@ -44,4 +44,9 @@ public class PacienteServiceImp implements PacienteService {
 
     }
 
+    @Override
+    public Optional<Paciente> obtenerPacientePorDni(String dni) {
+        return pacienteRep.obtenerPacientePorDni(dni);
+    }
+
 }

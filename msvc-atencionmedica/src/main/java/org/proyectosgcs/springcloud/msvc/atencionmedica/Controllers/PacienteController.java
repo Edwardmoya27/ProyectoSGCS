@@ -1,7 +1,10 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Controllers;
 
+import feign.FeignException;
 import jakarta.validation.Valid;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.CitasService;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -10,10 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @file: PacienteController
@@ -26,6 +26,8 @@ import java.util.Optional;
 public class PacienteController {
     @Autowired
     private PacienteService pacienteService;
+    @Autowired
+    private CitasService citasService;
 
     @GetMapping
     public List<Paciente> listarPacientes(){
@@ -88,4 +90,20 @@ public class PacienteController {
         return ResponseEntity.ok().body(Map.of("status", "error", "message",
                 "No existe paciente con el ID " + id));
     }
+    //otros metodos
+    @GetMapping("/citas/{dni}")
+    public ResponseEntity<?> obtenerCitasPorDNI(@PathVariable String dni) {
+
+            // Lógica para obtener todas las citas del paciente por su DNI
+            Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
+            if (!pacienteOptional.isPresent())
+                return ResponseEntity.ok().body(Map.of("status", "error", "message",
+                        "No existe paciente con el DNI " + dni));
+            Paciente pacienteDB = pacienteOptional.get();
+
+            List<Cita> citas = citasService.obtenerCitasPorIdPaciente(pacienteDB.getId());
+            return ResponseEntity.ok(citas);
+
+    }
+
 }

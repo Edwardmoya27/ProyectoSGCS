@@ -1,5 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Services;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +16,8 @@ public interface PacienteService {
     Optional<Paciente> buscarPorIdPaciente(Long idPaciente);
     Paciente guardarPaciente(Paciente paciente);
     void eliminarPaciente(long idPaciente);
+
+    //otros metodos
+    Optional<Paciente> obtenerPacientePorDni(String dni);
+
 }

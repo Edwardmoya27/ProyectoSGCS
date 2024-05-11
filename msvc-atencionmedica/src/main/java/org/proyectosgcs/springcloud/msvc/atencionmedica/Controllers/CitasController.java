@@ -4,6 +4,7 @@ import feign.FeignException;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.CitasService;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
