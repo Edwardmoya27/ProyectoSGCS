@@ -12,6 +12,6 @@ public interface CitaClientRest {
     @GetMapping("/{id}")
     Cita obtenerCitaPorId(@PathVariable Long id);
 
-    @GetMapping()
+    @GetMapping("/medico/{id}")
     List<Cita> obtenerCitasPorIdMedico(@PathVariable Long id);
 }

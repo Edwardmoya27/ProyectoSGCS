@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Medico;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,7 @@ public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotNull(message = "La fecha y hora no puede ser nula")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime fechaHora;
@@ -29,8 +32,7 @@ public class Cita {
     @JoinColumn(name = "paciente_id", referencedColumnName = "id")
     private Paciente paciente;
 
-    @NotBlank(message = "El nombre del médico no puede estar en blanco")
-    private String medico;
+    private Long medicoId;
 
     @NotBlank(message = "El motivo de la cita no puede estar en blanco")
     private String motivo;
@@ -38,15 +40,12 @@ public class Cita {
     @NotBlank(message = "El estado de la cita no puede estar en blanco")
     private String estado;
 
-    @OneToOne(mappedBy = "cita")
-    private CitaPago citaPago;
+    @OneToOne
+    @JoinColumn(name = "pago_id", referencedColumnName = "id")
+    private Pago pago;
 
-    //constructor para asignar pago a una cita
     public Cita () {
-        citaPago = new CitaPago();
-
+        pago = new Pago();
     }
-
-
 
 }

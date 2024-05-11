@@ -52,7 +52,7 @@ public class CitasController {
             citaDB.setFechaHora(cita.getFechaHora());
             citaDB.setEstado(cita.getEstado());
             citaDB.setPaciente(cita.getPaciente());
-            citaDB.setMedico(cita.getMedico());
+            citaDB.setMedicoId(cita.getMedicoId());
             citaDB.setMotivo(cita.getMotivo());
             return ResponseEntity.status(HttpStatus.CREATED).body(citasService.guardarCitas(citaDB));
         }
@@ -69,21 +69,33 @@ public class CitasController {
         return ResponseEntity.notFound().build();
         }
 
-        //metodos Remotos
-        @PostMapping("/crear-pago/{citaId}")
-        public ResponseEntity<?> crearPago(@RequestBody Pago pago, @PathVariable Long citaId){
-            Optional<Pago> oPago;
-            try {
-                oPago = citasService.crearPago(pago, citaId);
-            }
-            catch (FeignException e){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Collections.singletonMap("Mensaje","No se pudo crear el pago"+
-                                "o error en la comunicacion:"+e.getMessage()));
-            }
-            if (oPago.isPresent())
-                return ResponseEntity.status(HttpStatus.CREATED).body(oPago.get());
-            return ResponseEntity.notFound().build();
+    //metodos Remotos
+    @PostMapping("/crear-pago/{citaId}")
+    public ResponseEntity<?> crearPago(@RequestBody Pago pago, @PathVariable Long citaId){
+        Optional<Pago> oPago;
+        try {
+            oPago = citasService.crearPago(pago, citaId);
         }
+        catch (FeignException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("Mensaje","No se pudo crear el pago"+
+                            "o error en la comunicacion:"+e.getMessage()));
+        }
+        if (oPago.isPresent())
+            return ResponseEntity.status(HttpStatus.CREATED).body(oPago.get());
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/medicos/{idMedico}")
+    public ResponseEntity<?> listarCitasPorIdMedico(@PathVariable Long idMedico){
+        try {
+           return ResponseEntity.ok().body(citasService.obtenerCitasPorIdMedico(idMedico));
+        }
+        catch (FeignException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("Mensaje","No se pudo crear el pago"+
+                            "o error en la comunicacion:"+e.getMessage()));
+        }
+    }
 
 }

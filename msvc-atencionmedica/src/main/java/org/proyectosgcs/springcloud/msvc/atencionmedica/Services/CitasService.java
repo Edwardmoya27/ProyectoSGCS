@@ -25,4 +25,7 @@ public interface CitasService {
 
     //otros metodos
     List<Cita> obtenerCitasPorIdPaciente(Long id);
+
+    List<Cita> obtenerCitasPorIdMedico(Long id);
+
 }
