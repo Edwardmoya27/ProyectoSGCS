@@ -54,6 +54,7 @@ public class CitasController {
             citaDB.setPaciente(cita.getPaciente());
             citaDB.setMedicoId(cita.getMedicoId());
             citaDB.setMotivo(cita.getMotivo());
+            citaDB.setPagoId(cita.getPagoId());
             return ResponseEntity.status(HttpStatus.CREATED).body(citasService.guardarCitas(citaDB));
         }
         return ResponseEntity.notFound().build();
