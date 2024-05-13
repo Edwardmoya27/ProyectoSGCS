@@ -20,16 +20,16 @@ public class CategoriaMedicamentoController {
     public List<CategoriaMedicamento> listar(){
         return service.listar();
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle (@PathVariable Long id){
-        Optional<CategoriaMedicamento> postulaOptional = service.porId(id);
-        if(postulaOptional.isPresent()){
+        Optional<CategoriaMedicamento> categoriaMedicamento = service.porId(id);
+        if(categoriaMedicamento.isPresent()){
 
             return ResponseEntity.badRequest().body(
-                    Collections.singletonMap("Mensaje", "SI existe Categoria"));
+                    Collections.singletonMap("Mensaje", "NO existe Categoria con el ID"));
         }
-        return  ResponseEntity.badRequest().body(
-                Collections.singletonMap("Mensaje", "NO existe Categoria "));
+        return ResponseEntity.ok().body(categoriaMedicamento.get());
     }
     @PostMapping
     public ResponseEntity<?> crear(@Valid @RequestBody CategoriaMedicamento categoriaMedicamento, BindingResult result){
