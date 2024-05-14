@@ -16,6 +16,7 @@ import java.util.*;
 public class CategoriaMedicamentoController {
     @Autowired
     private CategoriaMedicamentoService service;
+
     @GetMapping
     public List<CategoriaMedicamento> listar(){
         return service.listar();
@@ -23,14 +24,14 @@ public class CategoriaMedicamentoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle (@PathVariable Long id){
-        Optional<CategoriaMedicamento> categoriaMedicamento = service.porId(id);
-        if(categoriaMedicamento.isPresent()){
-
+        Optional<CategoriaMedicamento> categoriaMedicamentoOptional = service.porId(id);
+        if(categoriaMedicamentoOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
                     Collections.singletonMap("Mensaje", "NO existe Categoria con el ID"));
         }
-        return ResponseEntity.ok().body(categoriaMedicamento.get());
+        return ResponseEntity.ok().body(categoriaMedicamentoOptional.get());
     }
+
     @PostMapping
     public ResponseEntity<?> crear(@Valid @RequestBody CategoriaMedicamento categoriaMedicamento, BindingResult result){
 
