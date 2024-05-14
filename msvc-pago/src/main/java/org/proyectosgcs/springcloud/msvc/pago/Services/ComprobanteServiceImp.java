@@ -2,10 +2,12 @@ package org.proyectosgcs.springcloud.msvc.pago.Services;
 
 import org.proyectosgcs.springcloud.msvc.pago.Repositories.ComprobanteRepository;
 import org.proyectosgcs.springcloud.msvc.pago.models.entity.Comprobante;
+import org.proyectosgcs.springcloud.msvc.pago.models.entity.Pago;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,14 +33,15 @@ public class ComprobanteServiceImp implements ComprobanteService{
         return compRep.findById(idComprobante);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Comprobante guardarComprobante(Comprobante comprobante) {
-        return compRep.save(comprobante);
-    }
+    //otros metodos
 
+    @Transactional
     @Override
-    public void eliminarComprobante(long idComprobante) {
-        compRep.deleteById(idComprobante);
+    public Comprobante generarComprobante(Pago pago) {
+        Comprobante comprobante = new Comprobante();
+        comprobante.setPago(pago);
+        comprobante.setFechaEmision(LocalDateTime.now());
+        comprobante.setMonto(pago.getMonto());
+        return compRep.save(comprobante);
     }
 }

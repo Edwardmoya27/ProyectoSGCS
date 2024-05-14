@@ -51,4 +51,14 @@ public class RecetaMedicaController {
         recetaMedicaService.deleteRecetaMedica(id);
         return ResponseEntity.ok().build();
     }
+
+    //otros metodos
+
+    @PostMapping("/crear-para-diagnostico/{idDiagnostico}")
+    public ResponseEntity<RecetaMedica> crearRecetaParaDiagnostico(
+            @PathVariable Long idDiagnostico,
+            @RequestBody RecetaMedica recetaMedica) {
+        RecetaMedica nuevaReceta = recetaMedicaService.crearRecetaParaDiagnostico(idDiagnostico, recetaMedica);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaReceta);
+    }
 }

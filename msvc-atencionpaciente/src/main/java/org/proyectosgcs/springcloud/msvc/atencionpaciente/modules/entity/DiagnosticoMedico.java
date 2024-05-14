@@ -3,9 +3,10 @@ package org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 import java.util.Date;
-
+@Data
 @Entity
 @Table(name = "diagnosticos_medicos")
 public class DiagnosticoMedico {
@@ -36,54 +37,10 @@ public class DiagnosticoMedico {
     @Column(name = "observaciones")
     private String observaciones;
 
-    // Getters y Setters
+    @OneToOne(mappedBy = "diagnosticoMedico")
+    private RecetaMedica recetaMedica;
 
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public Long getIdPaciente() {
-        return idPaciente;
-    }
-
-    public void setIdPaciente(Long idPaciente) {
-        this.idPaciente = idPaciente;
-    }
-
-    public Long getIdMedico() {
-        return idMedico;
-    }
-
-    public void setIdMedico(Long idMedico) {
-        this.idMedico = idMedico;
-    }
-
-    public Date getFechaDiagnostico() {
-        return fechaDiagnostico;
-    }
-
-    public void setFechaDiagnostico(Date fechaDiagnostico) {
-        this.fechaDiagnostico = fechaDiagnostico;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
-    public void setObservaciones(String observaciones) {
-        this.observaciones = observaciones;
-    }
 }
 

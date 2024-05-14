@@ -21,7 +21,7 @@ public interface CitasService {
     //metodos remotos
 
     Optional<Pago> asignarPago(Pago pago, Long citaId);
-    Optional<Pago> crearPago(Pago postula, Long citaId);
+    Optional<Pago> crearPago(Pago pago, Long citaId);
 
     //otros metodos
     List<Cita> obtenerCitasPorIdPaciente(Long id);

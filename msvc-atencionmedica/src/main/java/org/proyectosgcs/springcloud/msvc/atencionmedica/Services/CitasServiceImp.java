@@ -69,12 +69,9 @@ public class CitasServiceImp implements CitasService {
     @Override
     @Transactional
     public Optional<Pago> crearPago(Pago pago, Long citaId) {
-        Optional<Cita> citaOptional = citasRepository.findById(citaId);
-        if (citaOptional.isPresent()){
-            Pago newPago = client.crear(pago);
-            Cita citaDB = citaOptional.get();
-            citasRepository.save(citaDB);
-            return Optional.of(newPago);
+        Optional<Pago> pagoOptional = client.crear(pago);
+        if (pagoOptional.isPresent()){
+            return Optional.of(pagoOptional.get());
         }
         return Optional.empty();
     }

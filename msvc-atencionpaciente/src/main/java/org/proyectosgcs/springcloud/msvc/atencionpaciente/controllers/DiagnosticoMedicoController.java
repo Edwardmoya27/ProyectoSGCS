@@ -17,26 +17,26 @@ public class DiagnosticoMedicoController {
     private DiagnosticoMedicoService diagnosticoMedicoService;
 
     @GetMapping
-    public ResponseEntity<List<DiagnosticoMedico>> getAllDiagnosticos() {
+    public ResponseEntity<List<DiagnosticoMedico>> listarDiagnosticos() {
         List<DiagnosticoMedico> diagnosticos = diagnosticoMedicoService.findAll();
         return ResponseEntity.ok(diagnosticos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DiagnosticoMedico> getDiagnosticoById(@PathVariable Long id) {
+    public ResponseEntity<DiagnosticoMedico> listarDiagnoticoPorID(@PathVariable Long id) {
         return diagnosticoMedicoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/")
-    public ResponseEntity<DiagnosticoMedico> createDiagnostico(@RequestBody DiagnosticoMedico diagnosticoMedico) {
+    public ResponseEntity<DiagnosticoMedico> crearDiagnostico(@RequestBody DiagnosticoMedico diagnosticoMedico) {
         DiagnosticoMedico savedDiagnostico = diagnosticoMedicoService.saveDiagnosticoMedico(diagnosticoMedico);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedDiagnostico);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DiagnosticoMedico> updateDiagnostico(@PathVariable Long id, @RequestBody DiagnosticoMedico diagnosticoMedico) {
+    public ResponseEntity<DiagnosticoMedico> EditarDiagnostico(@PathVariable Long id, @RequestBody DiagnosticoMedico diagnosticoMedico) {
         return diagnosticoMedicoService.findById(id)
                 .map(existingDiagnostico -> {
                     diagnosticoMedico.setId(id);
@@ -48,9 +48,8 @@ public class DiagnosticoMedicoController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND)); // Retorna NOT_FOUND si no existe el diagnóstico
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDiagnostico(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarDiagnostico(@PathVariable Long id) {
         diagnosticoMedicoService.deleteDiagnosticoMedico(id);
         return ResponseEntity.ok().build();
     }

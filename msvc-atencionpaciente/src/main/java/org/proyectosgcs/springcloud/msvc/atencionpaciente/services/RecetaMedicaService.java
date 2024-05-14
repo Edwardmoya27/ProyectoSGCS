@@ -22,5 +22,11 @@ public interface RecetaMedicaService {
     void deleteRecetaMedica(Long id);
 
     Object save(RecetaMedica recetaMedica);
+
+
+    //otros metodos
+    RecetaMedica crearRecetaParaDiagnostico(Long idDiagnostico, RecetaMedica recetaMedica);
+
+
 }
 

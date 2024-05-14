@@ -3,11 +3,11 @@ package org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.http.ResponseEntity;
+import lombok.Data;
 
 import java.util.Date;
-import java.util.Optional;
 
+@Data
 @Entity
 @Table(name = "recetas_medicas")
 public class RecetaMedica {
@@ -48,82 +48,9 @@ public class RecetaMedica {
     @Column(name = "instrucciones_adicionales")
     private String instruccionesAdicionales;
 
-    // Getters y setters
+    @ManyToOne
+    @JoinColumn(name = "diagnostico_id", referencedColumnName = "id")
+    private DiagnosticoMedico diagnosticoMedico;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getIdPaciente() {
-        return idPaciente;
-    }
-
-    public void setIdPaciente(Long idPaciente) {
-        this.idPaciente = idPaciente;
-    }
-
-    public Long getIdMedico() {
-        return idMedico;
-    }
-
-    public void setIdMedico(Long idMedico) {
-        this.idMedico = idMedico;
-    }
-
-    public Date getFechaPrescripcion() {
-        return fechaPrescripcion;
-    }
-
-    public void setFechaPrescripcion(Date fechaPrescripcion) {
-        this.fechaPrescripcion = fechaPrescripcion;
-    }
-
-    public String getNombreMedicamento() {
-        return nombreMedicamento;
-    }
-
-    public void setNombreMedicamento(String nombreMedicamento) {
-        this.nombreMedicamento = nombreMedicamento;
-    }
-
-    public String getDosis() {
-        return dosis;
-    }
-
-    public void setDosis(String dosis) {
-        this.dosis = dosis;
-    }
-
-    public String getFrecuencia() {
-        return frecuencia;
-    }
-
-    public void setFrecuencia(String frecuencia) {
-        this.frecuencia = frecuencia;
-    }
-
-    public Integer getDuracion() {
-        return duracion;
-    }
-
-    public void setDuracion(Integer duracion) {
-        this.duracion = duracion;
-    }
-
-    public String getInstruccionesAdicionales() {
-        return instruccionesAdicionales;
-    }
-
-    public void setInstruccionesAdicionales(String instruccionesAdicionales) {
-        this.instruccionesAdicionales = instruccionesAdicionales;
-    }
-
-    public Optional<ResponseEntity<Object>> map(Object o) {
-        return Optional.empty();
-    }
 }
 

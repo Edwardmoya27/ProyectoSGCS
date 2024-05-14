@@ -32,7 +32,6 @@ public class Cita {
     @JoinColumn(name = "paciente_id", referencedColumnName = "id")
     private Paciente paciente;
 
-    @NotBlank(message = "El ID del medico es obligatorio")
     private Long medicoId;
 
     @NotBlank(message = "El motivo de la cita no puede estar en blanco")
@@ -41,7 +40,6 @@ public class Cita {
     @NotBlank(message = "El estado de la cita no puede estar en blanco")
     private String estado;
 
-    @NotBlank(message = "El ID del pago es obligatorio")
     private Long pagoId;
 
 }

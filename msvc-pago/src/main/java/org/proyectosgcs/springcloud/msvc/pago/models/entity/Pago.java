@@ -1,9 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.pago.models.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -25,5 +22,8 @@ public class Pago {
     private BigDecimal monto;
     private LocalDateTime fechaPago;
     private String metodoPago;
+
+    @OneToOne(mappedBy = "pago")
+    private Comprobante comprobante;
 
 }

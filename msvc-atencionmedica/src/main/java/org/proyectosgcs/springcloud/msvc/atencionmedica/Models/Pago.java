@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  * @HoraCreated: 06:11 p. m.
  */
 @Data
+@Entity
 public class Pago {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

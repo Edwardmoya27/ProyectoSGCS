@@ -1,10 +1,13 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.services;
 
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.DiagnosticoMedico;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.RecetaMedica;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories.DiagnosticoMedicoRepository;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories.RecetaMedicaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -14,6 +17,8 @@ import java.util.stream.StreamSupport;
 public class RecetaMedicaServiceImp implements RecetaMedicaService{
     @Autowired
     private RecetaMedicaRepository recetaMedicaRepository;
+    @Autowired
+    private DiagnosticoMedicoRepository diagMedRep;
 
     @Override
     public RecetaMedica saveRecetaMedica(RecetaMedica recetaMedica) {
@@ -67,4 +72,22 @@ public class RecetaMedicaServiceImp implements RecetaMedicaService{
     public Object save(RecetaMedica recetaMedica) {
         return null;
     }
+
+    @Override
+    public RecetaMedica crearRecetaParaDiagnostico(Long idDiagnostico, RecetaMedica recetaMedica) {
+        Optional<DiagnosticoMedico> diagnosticoOptional = diagMedRep.findById(idDiagnostico);
+        if (diagnosticoOptional.isPresent()) {
+            DiagnosticoMedico diagnosticoMedico = diagnosticoOptional.get();
+
+            // Asignar los atributos de la receta médica
+            recetaMedica.setIdPaciente(diagnosticoMedico.getIdPaciente());
+            recetaMedica.setIdMedico(diagnosticoMedico.getIdMedico());
+            recetaMedica.setFechaPrescripcion(new Date());
+
+            // Guardar la receta médica asociada al diagnóstico médico
+        }
+        return recetaMedicaRepository.save(recetaMedica);
+
+    }
+
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -73,18 +74,23 @@ public class CitasController {
     //metodos Remotos
     @PostMapping("/crear-pago/{citaId}")
     public ResponseEntity<?> crearPago(@RequestBody Pago pago, @PathVariable Long citaId){
-        Optional<Pago> oPago;
+
+        Optional<Cita> optionalCita = citasService.buscarPorIdCitas(citaId);
+        if(optionalCita.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status","error", "message", "No existe la cita con el ID "+citaId));
         try {
-            oPago = citasService.crearPago(pago, citaId);
+            Optional<Pago> pagoOptional = citasService.crearPago(pago, citaId);
+            if (pagoOptional.isEmpty())
+                return ResponseEntity.badRequest().body(Map.of(
+                        "status","error", "message", "No se creó el pago debido a un error"));
+            return ResponseEntity.ok().body(pagoOptional.get());
         }
         catch (FeignException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Collections.singletonMap("Mensaje","No se pudo crear el pago"+
                             "o error en la comunicacion:"+e.getMessage()));
         }
-        if (oPago.isPresent())
-            return ResponseEntity.status(HttpStatus.CREATED).body(oPago.get());
-        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/medico/{idMedico}")

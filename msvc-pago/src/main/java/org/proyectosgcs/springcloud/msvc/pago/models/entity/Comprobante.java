@@ -1,9 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.pago.models.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -25,5 +22,9 @@ public class Comprobante {
     private Long idPago;
     private LocalDateTime fechaEmision;
     private BigDecimal monto;
+
+    @OneToOne
+    @JoinColumn(name = "pago_id", referencedColumnName = "id")
+    private Pago pago;
 
 }

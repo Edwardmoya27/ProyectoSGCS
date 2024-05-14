@@ -1,7 +1,9 @@
 package org.proyectosgcs.springcloud.msvc.pago.Controllers;
 
 import org.proyectosgcs.springcloud.msvc.pago.Services.ComprobanteService;
+import org.proyectosgcs.springcloud.msvc.pago.Services.PagoService;
 import org.proyectosgcs.springcloud.msvc.pago.models.entity.Comprobante;
+import org.proyectosgcs.springcloud.msvc.pago.models.entity.Pago;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,9 @@ public class ComprobanteController {
     @Autowired
     private ComprobanteService compService;
 
+    @Autowired
+    private PagoService pagoService;
+
     @GetMapping
     public List<Comprobante> listarComprobantes(){
         return compService.listarComprobantes();
@@ -35,33 +40,21 @@ public class ComprobanteController {
         }
         return ResponseEntity.notFound().build();
     }
-    @PostMapping
-    public ResponseEntity<?> guardarComprobante(@RequestBody Comprobante comprobante){
-        return ResponseEntity.status(HttpStatus.CREATED).body(compService.guardarComprobante(comprobante));
 
-    }
+    //otros metodos
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editarComprobante(@PathVariable Long id,@RequestBody Comprobante comprobante){
-        Optional<Comprobante> o = compService.buscarPorIdComprobante(id);
-        if(o.isPresent()) {
-            Comprobante compDB = o.get();
-            compDB.setIdPago(compDB.getIdPago());
-            compDB.setFechaEmision(compDB.getFechaEmision());
-            compDB.setMonto(compDB.getMonto());
-            return ResponseEntity.status(HttpStatus.CREATED).body(compService.guardarComprobante(compDB));
+    @PostMapping("/generar")
+    public ResponseEntity<?> generarComprobante(@RequestBody Map<String, Long> data) {
+
+
+        Optional<Pago> pagoOptional = pagoService.buscarPorIdPago(data.get("idPago"));
+        if (pagoOptional.isPresent()) {
+            Pago pago = pagoOptional.get();
+            Comprobante comprobante = compService.generarComprobante(pago);
+            return ResponseEntity.status(HttpStatus.CREATED).body(comprobante);
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(Map.of("status", "error", "message",
-                "No se ha encontrado el ID del paciente"));
     }
 
-    @DeleteMapping ("/{id}")
-    public ResponseEntity<?> eliminarComprobante(@PathVariable Long id){
-        Optional<Comprobante> o = compService.buscarPorIdComprobante(id);
-        if(o.isPresent()) {
-            compService.eliminarComprobante(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
 }

@@ -7,18 +7,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.Optional;
+
 /**
  * @file: PagoClientRest
  * @author: EdwarMoya
  * @created: 08/05/2024
  * @HoraCreated: 09:27 p. m.
  */
-@FeignClient(name = "msvc-pagos", url = "localhost:8002/api/pagos")
+@FeignClient(name = "msvc-pagos", url = "localhost:8003/api/pagos")
 public interface PagoClientRest {
     @GetMapping("/{id}")
     Pago detalle(@PathVariable Long id);
 
     @PostMapping
-    Pago crear(@RequestBody Pago pago);
+    Optional<Pago> crear(@RequestBody Pago pago);
 
 }
