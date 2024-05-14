@@ -25,6 +25,12 @@ public class Medico {
     @Past(message = "La fecha de nacimiento debe ser en el pasado")
     private Date fechaNacimiento;
 
+    @NotNull(message = "El DNI no puede estar en blanco")
+    @Positive(message = "El DNI debe ser un número positivo")
+    @Pattern(regexp = "\\d{8}", message = "El DNI debe tener 8 dígitos")
+    @Column(unique = true)
+    private String dni;
+
     @ManyToOne
     @JoinColumn(name = "especialidad_id")
     private Especialidad especialidad;

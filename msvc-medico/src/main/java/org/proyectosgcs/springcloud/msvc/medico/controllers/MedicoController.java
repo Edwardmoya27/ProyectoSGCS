@@ -1,8 +1,12 @@
 package org.proyectosgcs.springcloud.msvc.medico.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.proyectosgcs.springcloud.msvc.medico.Auth.JwtAuthorizationHelper;
 import org.proyectosgcs.springcloud.msvc.medico.Clients.CitaClientRest;
+import org.proyectosgcs.springcloud.msvc.medico.Clients.MedicamentoClientRest;
 import org.proyectosgcs.springcloud.msvc.medico.Clients.PacienteClientRest;
 import org.proyectosgcs.springcloud.msvc.medico.models.Cita;
+import org.proyectosgcs.springcloud.msvc.medico.models.Medicamento;
 import org.proyectosgcs.springcloud.msvc.medico.models.Paciente;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Especialidad;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Medico;
@@ -30,23 +34,48 @@ public class MedicoController {
     private PacienteClientRest pacienteClientRest;
     @Autowired
     private CitaClientRest citaClientRest;
+    @Autowired
+    private MedicamentoClientRest medicamentoClientRest;
+
+    @Autowired
+    private JwtAuthorizationHelper jwtAuthorizationHelper;
 
     @GetMapping
-    public List<Medico> listar(){
-        return service.listarMedicos();
+    public ResponseEntity<?> listar(HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRolAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+        return ResponseEntity.ok().body(service.listarMedicos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> detalle(@PathVariable Long id){
-        Optional<Medico> medicoOptional = service.obtenerMedico(id);
-        if (medicoOptional.isPresent()){
-            return ResponseEntity.ok(medicoOptional.get());
+    public ResponseEntity<?> detalle(@PathVariable Long id, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRolAdmin(request) || !jwtAuthorizationHelper.validarRolMedico(request) || !jwtAuthorizationHelper.validarRolPaciente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
         }
-        return ResponseEntity.notFound().build();
+        Optional<Medico> medicoOptional = service.obtenerMedico(id);
+        if(medicoOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
+                    "message", "El médico con el ID " + id + " no existe"
+            ));
+        return ResponseEntity.ok(medicoOptional.get());
     }
 
     @PostMapping
-    public ResponseEntity<?> crear (@RequestBody Medico medico){
+    public ResponseEntity<?> crear (@RequestBody Medico medico, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRolAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
         Optional<Especialidad> optionalEspecialidad = especialidadService.obtenerEspecialidad(medico.getEspecialidad().getId());
         if (optionalEspecialidad.isPresent()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarMedico(medico));
@@ -121,6 +150,17 @@ public class MedicoController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
         }
         return ResponseEntity.ok().body(citaApi);
+    }
+
+
+    @GetMapping("/medicamentos")
+    public ResponseEntity<?> obtenerLstadoMedicamentos(){
+        try {
+            List<Medicamento> medicamentoList = medicamentoClientRest.obtenerListadoMedicamentos();
+            return ResponseEntity.ok().body(medicamentoList);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Hay un error en la conexion con el microservicio"));
+        }
     }
 
 }

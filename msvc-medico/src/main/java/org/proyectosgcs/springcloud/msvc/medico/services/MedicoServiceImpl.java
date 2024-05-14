@@ -34,4 +34,9 @@ public class MedicoServiceImpl implements MedicoService{
     public void eliminarMedico(Long id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public Optional<Medico> obtenerMedicoPorDni(String dni) {
+        return repository.obtenerMedicoPorDni(dni);
+    }
 }

@@ -90,6 +90,18 @@ public class PacienteController {
         return ResponseEntity.ok().body(Map.of("status", "error", "message",
                 "No existe paciente con el ID " + id));
     }
+
+
+    @GetMapping("/dni/{dni}")
+    public ResponseEntity<?> obtenerPacientePorDNI(@PathVariable String dni) {
+        Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status","error",
+                    "message", "El paciente con el DNI " +dni+ " no se ha encontrado"));
+        return ResponseEntity.ok().body(pacienteOptional.get());
+    }
+
     //otros metodos
     @GetMapping("/citas/{dni}")
     public ResponseEntity<?> obtenerCitasPorDNI(@PathVariable String dni) {

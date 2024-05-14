@@ -10,4 +10,6 @@ public interface MedicoService {
     Optional<Medico> obtenerMedico(Long id);
     Medico registrarMedico(Medico medico);
     void eliminarMedico(Long id);
+
+    Optional<Medico> obtenerMedicoPorDni(String dni);
 }
