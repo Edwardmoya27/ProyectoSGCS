@@ -1,6 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Controllers;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
@@ -106,7 +107,7 @@ public class PacienteController {
     @GetMapping("/citas/{dni}")
     public ResponseEntity<?> obtenerCitasPorDNI(@PathVariable String dni) {
 
-            // Lógica para obtener todas las citas del paciente por su DNI
+            //obtener todas las citas del paciente por su DNI
             Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
             if (!pacienteOptional.isPresent())
                 return ResponseEntity.ok().body(Map.of("status", "error", "message",
