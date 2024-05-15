@@ -3,6 +3,7 @@ package org.proyectosgcs.springcloud.msvc.atencionmedica.Controllers;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Auth.JwtAuthorizationHelper;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.CitasService;
@@ -29,13 +30,24 @@ public class PacienteController {
     private PacienteService pacienteService;
     @Autowired
     private CitasService citasService;
+    @Autowired
+    private JwtAuthorizationHelper jwtAuthorizationHelper;
 
     @GetMapping
     public List<Paciente> listarPacientes(){
         return pacienteService.listarPacientes();
     }
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorIdPaciente(@PathVariable Long id){
+    public ResponseEntity<?> obtenerPacientePorId(@PathVariable Long id, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Paciente> PacienteOptional = pacienteService.buscarPorIdPaciente(id);
         if(PacienteOptional.isPresent()) {
             return ResponseEntity.ok(PacienteOptional.get());
@@ -113,7 +125,6 @@ public class PacienteController {
                 return ResponseEntity.ok().body(Map.of("status", "error", "message",
                         "No existe paciente con el DNI " + dni));
             Paciente pacienteDB = pacienteOptional.get();
-
             List<Cita> citas = citasService.obtenerCitasPorIdPaciente(pacienteDB.getId());
             return ResponseEntity.ok(citas);
 

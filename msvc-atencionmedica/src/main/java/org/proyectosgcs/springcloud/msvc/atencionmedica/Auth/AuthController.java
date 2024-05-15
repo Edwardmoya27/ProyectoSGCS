@@ -38,14 +38,14 @@ public class AuthController {
                     "message", "El DNI no puede estar vacío"
             ));
         }
-        Optional<Paciente> medicoOptional = pacienteService.obtenerPacientePorDni(dni);
-        if (medicoOptional.isEmpty())
+        Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
+        if (pacienteOptional.isEmpty())
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
                     "message", "El paciente con el DNI " + dni + " no existe"
             ));
         String token = generarTokenJWT(dni);
-        return ResponseEntity.ok(Map.of("token", token));
+        return ResponseEntity.ok(Map.of("token", token, "status","ok","data", pacienteOptional.get()));
     }
     // Método para generar un token JWT
     private String generarTokenJWT(String dni) {

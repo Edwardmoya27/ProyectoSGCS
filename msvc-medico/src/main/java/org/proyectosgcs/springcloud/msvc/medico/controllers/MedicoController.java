@@ -25,7 +25,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/medicos")
 public class MedicoController {
-
     @Autowired
     private MedicoService service;
     @Autowired
@@ -42,18 +41,14 @@ public class MedicoController {
 
     @GetMapping
     public ResponseEntity<?> listar(HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRolAdmin(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
         return ResponseEntity.ok().body(service.listarMedicos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle(@PathVariable Long id, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRolAdmin(request) || !jwtAuthorizationHelper.validarRolMedico(request) || !jwtAuthorizationHelper.validarRolPaciente(request)) {
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "status", "error",
                     "message", "Acceso denegado"
@@ -70,12 +65,6 @@ public class MedicoController {
 
     @PostMapping
     public ResponseEntity<?> crear (@RequestBody Medico medico, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRolAdmin(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
         Optional<Especialidad> optionalEspecialidad = especialidadService.obtenerEspecialidad(medico.getEspecialidad().getId());
         if (optionalEspecialidad.isPresent()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarMedico(medico));

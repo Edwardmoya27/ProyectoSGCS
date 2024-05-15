@@ -1,18 +1,21 @@
-package org.proyectosgcs.springcloud.msvc.medico.Auth;
+package org.proyectosgcs.springcloud.msvc.atencionmedica.Auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @file: JWTAutorizationHelper
+ * @author: EdwarMoya
+ * @created: 14/05/2024
+ * @HoraCreated: 05:57 a. m.
+ */
 @Component
 public class JwtAuthorizationHelper {
-
     private static final String jwtSecret = "8p5sBZD84u2cP7wjM6YSZwTz0G2tP1qosKLKvIMgpJU";
 
     private List<String> getRolesFromToken(HttpServletRequest request) {

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,16 +38,16 @@ public class AuthController {
         if (medicoOptional.isEmpty())
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
-                    "message", "El medico con el DNI " + dni + " no existe"
+                    "message", "No se encuentra el médico. Por favor verifica tu DNI"
             ));
         String token = generarTokenJWT(dni);
-        return ResponseEntity.ok(Map.of("token", token));
+        return ResponseEntity.ok(Map.of("token", token, "status","ok","data", medicoOptional.get()));
     }
 
     // Método para generar un token JWT
     private String generarTokenJWT(String dni) {
         Claims claims = Jwts.claims().setSubject(dni);
-        claims.put("roles", Arrays.asList("MEDICO"));
+        claims.put("roles", List.of("PACIENTE"));
         return Jwts.builder()
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
