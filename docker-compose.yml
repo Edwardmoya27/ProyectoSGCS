@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  msvc-atencionmedica:
+    build: ./msvc-atencionmedica
+    ports:
+      - "8001:8080"
+
+  msvc-atencionpaciente:
+    build: ./msvc-atencionpaciente
+    ports:
+      - "8005:8080"
+
+  msvc-medicamento:
+    build: ./msvc-medicamento
+    ports:
+      - "8004:8080"
+
+  msvc-medico:
+    build: ./msvc-medico
+    ports:
+      - "8002:8080"
+
+  msvc-pago:
+    build: ./msvc-pago
+    ports:
+      - "8003:8080"
