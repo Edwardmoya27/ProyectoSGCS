@@ -48,7 +48,7 @@ public class CategoriaController {
         Optional<Categoria> categoriaMedicamentoOptional = service.porId(id);
         if(categoriaMedicamentoOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
-                    Collections.singletonMap("Mensaje", "NO existe Categoria con el ID"));
+                    Collections.singletonMap("Mensaje", "No existe Categoria con el ID"));
         }
         return ResponseEntity.ok().body(categoriaMedicamentoOptional.get());
     }

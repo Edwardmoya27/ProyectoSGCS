@@ -1,7 +1,9 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.controllers;
 
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.clients.MedicoClientRest;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.clients.PacienteClientRest;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.config.JwtFeignInterceptor;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.Medico;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.Paciente;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.DiagnosticoMedico;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.services.DiagnosticoMedicoService;
@@ -21,7 +23,8 @@ public class DiagnosticoMedicoController {
 
     @Autowired
     private DiagnosticoMedicoService diagnosticoMedicoService;
-
+    @Autowired
+    private MedicoClientRest medicoClientRest;
     @Autowired
     private PacienteClientRest pacienteClientRest;
 
@@ -39,8 +42,25 @@ public class DiagnosticoMedicoController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/")
-    public ResponseEntity<DiagnosticoMedico> crearDiagnostico(@RequestBody DiagnosticoMedico diagnosticoMedico) {
+    @PostMapping
+    public ResponseEntity<?> crearDiagnostico(
+            @RequestBody DiagnosticoMedico diagnosticoMedico,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        //Obtener Token y pasarlo al microservicio
+        String token = authorizationHeader.replace("Bearer ", "");
+        JwtFeignInterceptor.setToken(token);
+
+        //Verificar si existe un medico a travez de otro microservicio
+        Optional<Medico> medicoOptional = medicoClientRest.obtenerMedicoPorId(diagnosticoMedico.getIdMedico());
+        if (medicoOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "No existe el médico"));
+
+        //Verificar si existe un medico a travez de otro microservicio
+        Optional<Paciente> pacienteOptional = pacienteClientRest.obtenerPacientePorId(diagnosticoMedico.getIdPaciente());
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "No existe el paciente"));
+
+
         DiagnosticoMedico savedDiagnostico = diagnosticoMedicoService.saveDiagnosticoMedico(diagnosticoMedico);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedDiagnostico);
     }
