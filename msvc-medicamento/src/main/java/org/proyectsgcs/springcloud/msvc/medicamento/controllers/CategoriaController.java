@@ -23,12 +23,28 @@ public class CategoriaController {
     private JwtAuthorizationHelper jwtAuthorizationHelper;
 
     @GetMapping
-    public List<Categoria> listar(){
-        return service.listar();
+    public ResponseEntity<?> listar(HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+        return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> detalle (@PathVariable Long id){
+    public ResponseEntity<?> detalle (@PathVariable Long id, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
         Optional<Categoria> categoriaMedicamentoOptional = service.porId(id);
         if(categoriaMedicamentoOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
@@ -41,6 +57,19 @@ public class CategoriaController {
     public ResponseEntity<?> crear(@Valid @RequestBody Categoria categoriaMedicamento,
                                    BindingResult result,
                                    HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(categoriaMedicamento));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editar(@Valid @RequestBody Categoria categoriaMedicamento,
+                                    BindingResult result, @PathVariable Long id,
+                                    HttpServletRequest request){
 
         if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
@@ -49,11 +78,6 @@ public class CategoriaController {
             ));
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(categoriaMedicamento));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@Valid@RequestBody Categoria categoriaMedicamento, BindingResult result, @PathVariable Long id){
         if(result.hasErrors()){
             return Validando(result);
         }
@@ -67,7 +91,15 @@ public class CategoriaController {
         return ResponseEntity.notFound().build();
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id){
+    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpServletRequest request){
+
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Categoria> pos = service.porId(id);
         if(pos.isPresent()){
             service.eliminar(id);
@@ -77,6 +109,7 @@ public class CategoriaController {
     }
 
     private static ResponseEntity<Map<String, String>> Validando(BindingResult result) {
+
         Map<String, String> errores=new HashMap();
         result.getFieldErrors().forEach(err ->{
             errores.put(err.getField(), "El campo "+err.getField()+" "+err.getDefaultMessage());
