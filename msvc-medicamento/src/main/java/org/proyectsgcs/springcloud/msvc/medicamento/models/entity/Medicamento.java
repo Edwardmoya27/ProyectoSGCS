@@ -33,9 +33,9 @@ public class Medicamento {
     @Positive(message = "El precio del medicamento debe ser un número positivo")
     private double precio;
 
-    @NotNull(message = "La categoría del medicamento es obligatoria")
     @ManyToOne
-    private CategoriaMedicamento categoriaMedicamento;
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
     @PositiveOrZero(message = "El stock disponible del medicamento debe ser un número positivo o cero")
     private int stockDisponible;

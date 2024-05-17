@@ -6,15 +6,11 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "categorias_medicamento")
-public class CategoriaMedicamento {
+@Table(name = "categorias")
+public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @NotEmpty
-    private String nombreCategoria; //analgésicos, antibióticos, vitaminas
-
-
-
+    private String nombre;
 }

@@ -1,9 +1,12 @@
 package org.proyectsgcs.springcloud.msvc.medicamento.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.proyectsgcs.springcloud.msvc.medicamento.models.entity.CategoriaMedicamento;
-import org.proyectsgcs.springcloud.msvc.medicamento.services.CategoriaMedicamentoService;
+import org.proyectsgcs.springcloud.msvc.medicamento.Auth.JwtAuthorizationHelper;
+import org.proyectsgcs.springcloud.msvc.medicamento.models.entity.Categoria;
+import org.proyectsgcs.springcloud.msvc.medicamento.services.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,18 +16,20 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/categorias")
-public class CategoriaMedicamentoController {
+public class CategoriaController {
     @Autowired
-    private CategoriaMedicamentoService service;
+    private CategoriaService service;
+    @Autowired
+    private JwtAuthorizationHelper jwtAuthorizationHelper;
 
     @GetMapping
-    public List<CategoriaMedicamento> listar(){
+    public List<Categoria> listar(){
         return service.listar();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle (@PathVariable Long id){
-        Optional<CategoriaMedicamento> categoriaMedicamentoOptional = service.porId(id);
+        Optional<Categoria> categoriaMedicamentoOptional = service.porId(id);
         if(categoriaMedicamentoOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
                     Collections.singletonMap("Mensaje", "NO existe Categoria con el ID"));
@@ -33,20 +38,29 @@ public class CategoriaMedicamentoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crear(@Valid @RequestBody CategoriaMedicamento categoriaMedicamento, BindingResult result){
+    public ResponseEntity<?> crear(@Valid @RequestBody Categoria categoriaMedicamento,
+                                   BindingResult result,
+                                   HttpServletRequest request){
+
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(categoriaMedicamento));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@Valid@RequestBody CategoriaMedicamento categoriaMedicamento, BindingResult result, @PathVariable Long id){
+    public ResponseEntity<?> editar(@Valid@RequestBody Categoria categoriaMedicamento, BindingResult result, @PathVariable Long id){
         if(result.hasErrors()){
             return Validando(result);
         }
-        Optional<CategoriaMedicamento> pos = service.porId(id);
+        Optional<Categoria> pos = service.porId(id);
         if(pos.isPresent()){
-            CategoriaMedicamento postulAux = pos.get();
-            postulAux.setNombreCategoria(categoriaMedicamento.getNombreCategoria());
+            Categoria postulAux = pos.get();
+            postulAux.setNombre(categoriaMedicamento.getNombre());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(service.guardar(postulAux));
         }
@@ -54,7 +68,7 @@ public class CategoriaMedicamentoController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id){
-        Optional<CategoriaMedicamento> pos = service.porId(id);
+        Optional<Categoria> pos = service.porId(id);
         if(pos.isPresent()){
             service.eliminar(id);
             return ResponseEntity.noContent().build();
