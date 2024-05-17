@@ -1,5 +1,9 @@
-FROM amazoncorretto:22-alpine-jdk
+FROM openjdk:22
 
-COPY /target/msvc-medico-0.0.1-SNAPSHOT.jar msvc-medico.jar
+WORKDIR /app
 
-ENTRYPOINT ["java", "-jar", "msvc-medico.jar"]
+COPY /target/msvc-medico-0.0.1-SNAPSHOT.jar .
+
+EXPOSE 8002
+
+ENTRYPOINT ["java", "-jar", "msvc-medico-0.0.1-SNAPSHOT.jar"]

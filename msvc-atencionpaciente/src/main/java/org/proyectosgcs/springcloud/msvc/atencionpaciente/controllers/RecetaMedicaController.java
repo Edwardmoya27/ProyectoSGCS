@@ -1,6 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.controllers;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.RecetaMedica;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.RecetaMedica;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.services.RecetaMedicaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

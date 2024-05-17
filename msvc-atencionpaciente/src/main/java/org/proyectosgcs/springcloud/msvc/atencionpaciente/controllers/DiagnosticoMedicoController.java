@@ -1,13 +1,19 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.controllers;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.DiagnosticoMedico;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.clients.PacienteClientRest;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.config.JwtFeignInterceptor;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.Paciente;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.DiagnosticoMedico;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.services.DiagnosticoMedicoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/diagnosticos")
@@ -15,6 +21,10 @@ public class DiagnosticoMedicoController {
 
     @Autowired
     private DiagnosticoMedicoService diagnosticoMedicoService;
+
+    @Autowired
+    private PacienteClientRest pacienteClientRest;
+
 
     @GetMapping
     public ResponseEntity<List<DiagnosticoMedico>> listarDiagnosticos() {
@@ -52,6 +62,27 @@ public class DiagnosticoMedicoController {
     public ResponseEntity<Void> eliminarDiagnostico(@PathVariable Long id) {
         diagnosticoMedicoService.deleteDiagnosticoMedico(id);
         return ResponseEntity.ok().build();
+    }
+
+
+    //MetodosRemotos
+
+    @GetMapping("/pacientes/{id}")
+
+    public ResponseEntity<?> obtenerListaDiagnosticosPorPacienteId(@PathVariable Long id, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+
+        String token = authorizationHeader.replace("Bearer ", "");
+        JwtFeignInterceptor.setToken(token);
+
+        Optional<Paciente> pacienteOptional = pacienteClientRest.obtenerPacientePorId(id);
+        if (pacienteOptional.isEmpty())
+            return  ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "El paciente con el ID " +id + " no se encuentra")
+            );
+        Paciente pacienteApi = pacienteOptional.get();
+        List<DiagnosticoMedico> diagnosticoMedicos = diagnosticoMedicoService.findByPacienteId(pacienteApi.getId());
+        return ResponseEntity.ok(diagnosticoMedicos);
     }
 }
 

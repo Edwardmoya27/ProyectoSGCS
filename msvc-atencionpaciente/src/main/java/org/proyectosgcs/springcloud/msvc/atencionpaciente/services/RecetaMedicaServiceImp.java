@@ -1,7 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.services;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.DiagnosticoMedico;
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.RecetaMedica;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.DiagnosticoMedico;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.RecetaMedica;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories.DiagnosticoMedicoRepository;
 import org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories.RecetaMedicaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
