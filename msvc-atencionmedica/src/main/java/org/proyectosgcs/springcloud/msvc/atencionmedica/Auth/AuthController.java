@@ -3,54 +3,45 @@ package org.proyectosgcs.springcloud.msvc.atencionmedica.Auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
-import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.PacienteService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-/**
- * @file: AuthController
- * @author: EdwarMoya
- * @created: 14/05/2024
- * @HoraCreated: 05:56 a. m.
- */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
     private static String jwtSecret = "8p5sBZD84u2cP7wjM6YSZwTz0G2tP1qosKLKvIMgpJU";
-    @Autowired
-    private PacienteService pacienteService;
+    private static String admin_email = "admin@proyectosgcs.org";
+    private static String admin_password = "proyectosgcs";
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> dniData) {
-        String dni = dniData.get("dni");
-        if (dni == null || dni.isEmpty()) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+
+        // Verifica si el email y la contraseña coinciden con el ADMIN
+        if (admin_email.equals(email) && admin_password.equals(password)) {
+            // Genera un token JWT con el rol ADMIN
+            String token = generarTokenJWT(email, "ADMIN");
+            return ResponseEntity.ok(Map.of("token", token, "status", "ok"));
+        } else {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
-                    "message", "El DNI no puede estar vacío"
+                    "message", "Credenciales incorrectas. Por favor verifica tu email y contraseña"
             ));
         }
-        Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
-        if (pacienteOptional.isEmpty())
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "error",
-                    "message", "El paciente con el DNI " + dni + " no existe"
-            ));
-        String token = generarTokenJWT(dni);
-        return ResponseEntity.ok(Map.of("token", token, "status","ok","data", pacienteOptional.get()));
     }
-    // Método para generar un token JWT
-    private String generarTokenJWT(String dni) {
-        Claims claims = Jwts.claims().setSubject(dni);
-        claims.put("roles", Arrays.asList("PACIENTE"));
+
+    // Método para generar un token JWT con roles
+    private String generarTokenJWT(String email, String role) {
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put("roles", List.of(role));
         return Jwts.builder()
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
