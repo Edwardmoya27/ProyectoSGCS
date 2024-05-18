@@ -41,6 +41,14 @@ public class MedicoController {
 
     @GetMapping
     public ResponseEntity<?> listar(HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
+
         return ResponseEntity.ok().body(service.listarMedicos());
     }
 
@@ -65,6 +73,14 @@ public class MedicoController {
 
     @PostMapping
     public ResponseEntity<?> crear (@RequestBody Medico medico, HttpServletRequest request){
+
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Especialidad> optionalEspecialidad = especialidadService.obtenerEspecialidad(medico.getEspecialidad().getId());
         if (optionalEspecialidad.isPresent()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarMedico(medico));
@@ -76,7 +92,15 @@ public class MedicoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity <? > editar (@RequestBody Medico medico, @PathVariable Long id) {
+    public ResponseEntity <? > editar (@RequestBody Medico medico, @PathVariable Long id, HttpServletRequest request) {
+
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Medico> op = service.obtenerMedico(id);
         if (op.isPresent()) {
             Medico medicoDb = op.get();
@@ -90,7 +114,14 @@ public class MedicoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id){
+    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Medico> op = service.obtenerMedico(id);
         if (op.isPresent()){
             service.eliminarMedico(id);
