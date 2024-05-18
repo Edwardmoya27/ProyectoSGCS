@@ -1,6 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.DiagnosticoMedico;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.DiagnosticoMedico;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,5 +13,10 @@ public interface DiagnosticoMedicoRepository extends CrudRepository<DiagnosticoM
 
     // Método para encontrar diagnósticos por el ID del médico
     List<DiagnosticoMedico> findByIdMedico(Long idMedico);
+
+
+
+
+
 }
 

@@ -1,6 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.services;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.RecetaMedica;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.RecetaMedica;
 
 import java.util.List;
 import java.util.Optional;

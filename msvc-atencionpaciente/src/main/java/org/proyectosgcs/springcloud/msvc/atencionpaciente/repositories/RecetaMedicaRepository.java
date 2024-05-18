@@ -1,6 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.atencionpaciente.repositories;
 
-import org.proyectosgcs.springcloud.msvc.atencionpaciente.modules.entity.RecetaMedica;
+import org.proyectosgcs.springcloud.msvc.atencionpaciente.models.entity.RecetaMedica;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
