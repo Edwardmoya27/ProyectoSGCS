@@ -1,7 +1,6 @@
 package org.proyectosgcs.springcloud.msvc.pago.Services;
 
 import org.proyectosgcs.springcloud.msvc.pago.models.entity.Comprobante;
-import org.proyectosgcs.springcloud.msvc.pago.models.entity.Pago;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +16,6 @@ public interface ComprobanteService {
     Optional<Comprobante> buscarPorIdComprobante(Long idComprobante);
 
     //otros metodos
-    Comprobante generarComprobante(Pago pago);
+    Comprobante generarComprobante(Comprobante comprobante);
 
 }

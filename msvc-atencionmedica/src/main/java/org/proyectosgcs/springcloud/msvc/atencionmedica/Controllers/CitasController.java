@@ -1,11 +1,19 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Controllers;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Auth.JwtAuthorizationHelper;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Clients.MedicoClientRest;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Clients.PagoClientRest;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Cita;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Entity.Paciente;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Medico;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.CitasService;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Services.PacienteService;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.config.JwtFeignInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +34,15 @@ import java.util.Optional;
 public class CitasController {
     @Autowired
     private CitasService citasService;
+    @Autowired
+    private PacienteService pacienteService;
+    @Autowired
+    MedicoClientRest medicoClientRest;
+    @Autowired
+    private PagoClientRest pagoClientRest;
+
+    @Autowired
+    private JwtAuthorizationHelper jwtAuthorizationHelper;
 
     @GetMapping
     public List<Cita> listarCitas(){
@@ -40,19 +57,63 @@ public class CitasController {
         return ResponseEntity.notFound().build();
     }
     @PostMapping
-    public ResponseEntity<?> crearCita(@RequestBody Cita cita){
+    public ResponseEntity<?> crearCita(
+            @RequestBody Cita cita,
+            HttpServletRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+
+        //Verificar token de acceso con rol ADMIN
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
+        //Enviar el token a otros microservicios
+        String token = authorizationHeader.replace("Bearer ", "");
+        JwtFeignInterceptor.setToken(token);
+
+        //Validar si existe el medico en el microservicio GESTION MEDICO
+        Optional<Medico> medicoOptional = medicoClientRest.obtenerMedicoPorId(cita.getMedicoId());
+        if (medicoOptional.isEmpty())
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "status", "error",
+                            "message", "El médico no existe"
+                    )
+            );
+
+        //Validar si existe el paciente
+        Optional<Paciente> pacienteOptional = pacienteService.buscarPorIdPaciente(cita.getPacienteId());
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.badRequest().body(
+                    Map.of(
+                            "status", "error",
+                            "message", "El paciente no existe"
+                    )
+            );
+
         return ResponseEntity.status(HttpStatus.CREATED).body(citasService.guardarCitas(cita));
 
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editarCita(@PathVariable Long id,@RequestBody Cita cita){
+    public ResponseEntity<?> editarCita(@PathVariable Long id,@RequestBody Cita cita, HttpServletRequest request){
+        //Verificar token de acceso con rol ADMIN
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Cita> o = citasService.buscarPorIdCitas(id);
         if(o.isPresent()) {
             Cita citaDB = o.get();
             citaDB.setFechaHora(cita.getFechaHora());
             citaDB.setEstado(cita.getEstado());
-            citaDB.setPaciente(cita.getPaciente());
+            citaDB.setPacienteId(cita.getPacienteId());
             citaDB.setMedicoId(cita.getMedicoId());
             citaDB.setMotivo(cita.getMotivo());
             citaDB.setPagoId(cita.getPagoId());
@@ -62,7 +123,16 @@ public class CitasController {
     }
 
     @DeleteMapping ("/{id}")
-    public ResponseEntity<?> eliminarCitas(@PathVariable Long id){
+    public ResponseEntity<?> eliminarCitas(@PathVariable Long id, HttpServletRequest request){
+
+        //Verificar token de acceso con rol ADMIN
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Cita> o = citasService.buscarPorIdCitas(id);
         if(o.isPresent()) {
             citasService.eliminarCitas(id);
@@ -72,25 +142,39 @@ public class CitasController {
         }
 
     //metodos Remotos
-    @PostMapping("/crear-pago/{citaId}")
-    public ResponseEntity<?> crearPago(@RequestBody Pago pago, @PathVariable Long citaId){
+    @PostMapping("/{citaId}/asignar-pago")
+    public ResponseEntity<?> asignarPago(@RequestBody Map<String, Long> data,
+                                         @PathVariable Long citaId,
+                                         HttpServletRequest request,
+                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
 
-        Optional<Cita> optionalCita = citasService.buscarPorIdCitas(citaId);
-        if(optionalCita.isEmpty())
+        //Verificar token de acceso con rol ADMIN
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
+        //Enviar el token a otros microservicios
+        String token = authorizationHeader.replace("Bearer ", "");
+        JwtFeignInterceptor.setToken(token);
+
+        Optional<Cita> citaOptional = citasService.buscarPorIdCitas(citaId);
+        if(citaOptional.isEmpty())
             return ResponseEntity.badRequest().body(Map.of(
-                    "status","error", "message", "No existe la cita con el ID "+citaId));
-        try {
-            Optional<Pago> pagoOptional = citasService.crearPago(pago, citaId);
-            if (pagoOptional.isEmpty())
-                return ResponseEntity.badRequest().body(Map.of(
-                        "status","error", "message", "No se creó el pago debido a un error"));
-            return ResponseEntity.ok().body(pagoOptional.get());
-        }
-        catch (FeignException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Collections.singletonMap("Mensaje","No se pudo crear el pago"+
-                            "o error en la comunicacion:"+e.getMessage()));
-        }
+                    "status","error", "message", "No existe la cita"));
+
+        Optional<Pago> pagoOptional = pagoClientRest.obtenerPagoPorId(data.get("pagoId"));
+        if (pagoOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status","error", "message", "El pago no existe"));
+
+        Pago pagoDB = pagoOptional.get();
+        Cita citaDB = citaOptional.get();
+        citaDB.setPagoId(pagoDB.getId());
+        return ResponseEntity.ok().body(citasService.guardarCitas(citaDB));
+
     }
 
     @GetMapping("/medico/{idMedico}")

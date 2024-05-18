@@ -15,10 +15,10 @@ import java.util.Optional;
  * @created: 08/05/2024
  * @HoraCreated: 09:27 p. m.
  */
-@FeignClient(name = "msvc-pagos", url = "localhost:8003/api/pagos")
+@FeignClient(name = "pagoClient", url = "localhost:8003/api/pagos")
 public interface PagoClientRest {
     @GetMapping("/{id}")
-    Pago detalle(@PathVariable Long id);
+    Optional<Pago> obtenerPagoPorId(@PathVariable Long id);
 
     @PostMapping
     Optional<Pago> crear(@RequestBody Pago pago);

@@ -1,5 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.pago.Controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.proyectosgcs.springcloud.msvc.pago.Auth.JwtAuthorizationHelper;
 import org.proyectosgcs.springcloud.msvc.pago.Services.ComprobanteService;
 import org.proyectosgcs.springcloud.msvc.pago.Services.PagoService;
 import org.proyectosgcs.springcloud.msvc.pago.models.entity.Comprobante;
@@ -26,14 +28,31 @@ public class ComprobanteController {
     private ComprobanteService compService;
 
     @Autowired
+    private JwtAuthorizationHelper jwtAuthorizationHelper;
+
+    @Autowired
     private PagoService pagoService;
 
     @GetMapping
-    public List<Comprobante> listarComprobantes(){
-        return compService.listarComprobantes();
+    public ResponseEntity<?> listarComprobantes(HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+        return ResponseEntity.ok(compService.listarComprobantes());
     }
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorIdComprobante(@PathVariable Long id){
+    public ResponseEntity<?> buscarPorIdComprobante(@PathVariable Long id, HttpServletRequest request){
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
         Optional<Comprobante> PacienteOptional = compService.buscarPorIdComprobante(id);
         if(PacienteOptional.isPresent()) {
             return ResponseEntity.ok(PacienteOptional.get());
@@ -44,17 +63,24 @@ public class ComprobanteController {
     //otros metodos
 
     @PostMapping("/generar")
-    public ResponseEntity<?> generarComprobante(@RequestBody Map<String, Long> data) {
+    public ResponseEntity<?> generarComprobante(@RequestBody Comprobante comprobante, HttpServletRequest request) {
 
-
-        Optional<Pago> pagoOptional = pagoService.buscarPorIdPago(data.get("idPago"));
-        if (pagoOptional.isPresent()) {
-            Pago pago = pagoOptional.get();
-            Comprobante comprobante = compService.generarComprobante(pago);
-            return ResponseEntity.status(HttpStatus.CREATED).body(comprobante);
-        } else {
-            return ResponseEntity.notFound().build();
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
         }
+        Optional<Pago> pagoOptional = pagoService.buscarPorIdPago(comprobante.getPago().getId());
+
+        if(pagoOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "No pago no existe"
+            ));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(compService.generarComprobante(comprobante));
+
     }
 
 }

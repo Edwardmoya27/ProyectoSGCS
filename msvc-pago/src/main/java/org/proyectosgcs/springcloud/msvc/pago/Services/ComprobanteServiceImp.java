@@ -35,13 +35,9 @@ public class ComprobanteServiceImp implements ComprobanteService{
 
     //otros metodos
 
-    @Transactional
+
     @Override
-    public Comprobante generarComprobante(Pago pago) {
-        Comprobante comprobante = new Comprobante();
-        comprobante.setPago(pago);
-        comprobante.setFechaEmision(LocalDateTime.now());
-        comprobante.setMonto(pago.getMonto());
+    public Comprobante generarComprobante(Comprobante comprobante) {
         return compRep.save(comprobante);
     }
 }

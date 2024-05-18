@@ -53,28 +53,6 @@ public class CitasServiceImp implements CitasService {
         citasRepository.deleteById(idCitas);
     }
 
-    @Override
-    @Transactional
-    public Optional<Pago> asignarPago(Pago pago, Long citaId) {
-        Optional<Cita> cita = citasRepository.findById(citaId);
-        if (cita.isPresent()){
-            Pago pagoDB = client.detalle(pago.getId());
-            Cita citaDB = cita.get();
-            citasRepository.save(citaDB);
-            return Optional.of(pagoDB);
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    @Transactional
-    public Optional<Pago> crearPago(Pago pago, Long citaId) {
-        Optional<Pago> pagoOptional = client.crear(pago);
-        if (pagoOptional.isPresent()){
-            return Optional.of(pagoOptional.get());
-        }
-        return Optional.empty();
-    }
 
     @Override
     public List<Cita> obtenerCitasPorIdPaciente(Long id) {

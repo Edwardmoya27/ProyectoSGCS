@@ -1,6 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.pago.models.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -19,12 +20,13 @@ public class Comprobante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idPago;
-    private LocalDateTime fechaEmision;
-    private BigDecimal monto;
-
     @OneToOne
     @JoinColumn(name = "pago_id", referencedColumnName = "id")
+    @NotNull(message = "El id del pago no puede ser nulo")
     private Pago pago;
+
+    private LocalDateTime fechaHora;
+
+    private String detalles;
 
 }

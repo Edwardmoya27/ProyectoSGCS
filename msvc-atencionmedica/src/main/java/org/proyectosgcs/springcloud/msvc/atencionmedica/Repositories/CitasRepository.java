@@ -14,7 +14,7 @@ import java.util.List;
  * @HoraCreated: 05:17 p. m.
  */
 public interface CitasRepository extends CrudRepository<Cita, Long> {
-    @Query("select c from Cita c where c.paciente.id = ?1")
+    @Query("select c from Cita c where c.pacienteId = ?1")
     List<Cita> obtenerCitasPorIdPaciente(Long idPaciente);
 
     @Query("select c from Cita c where c.medicoId = ?1")

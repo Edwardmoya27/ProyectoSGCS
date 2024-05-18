@@ -1,6 +1,8 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,5 +15,6 @@ public class Medico {
     private String nombres;
     private String apellidos;
     private Date fechaNacimiento;
+    private String dni;
     private Especialidad especialidad;
 }

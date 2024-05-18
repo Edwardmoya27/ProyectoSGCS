@@ -1,9 +1,9 @@
 package org.proyectosgcs.springcloud.msvc.pago.models.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -18,12 +18,20 @@ public class Pago {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long idPaciente;
-    private BigDecimal monto;
-    private LocalDateTime fechaPago;
-    private String metodoPago;
 
-    @OneToOne(mappedBy = "pago")
-    private Comprobante comprobante;
+    @NotNull(message = "El id del paciente no puede ser nulo")
+    private Long pacienteId;
+
+    @NotNull(message = "El id de la cita no puede ser nulo")
+    private Long citaId;
+
+    @NotNull(message = "El monto no puede ser nulo")
+    @Positive(message = "El monto debe ser positivo")
+    private Double monto;
+
+    @NotNull(message = "La fecha y hora del pago no puede ser nula")
+    private LocalDateTime fechaHora;
+
+    private String metodoPago;
 
 }
