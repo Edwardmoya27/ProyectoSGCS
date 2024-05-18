@@ -24,9 +24,7 @@ public class EspecialidadController {
 
     @GetMapping
     public ResponseEntity<?> listar(HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
-                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "status", "error",
                     "message", "Acceso denegado"
@@ -38,9 +36,7 @@ public class EspecialidadController {
     @GetMapping("/{id}")
     public ResponseEntity<?> detalle(@PathVariable Long id, HttpServletRequest request){
 
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
-                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "status", "error",
                     "message", "Acceso denegado"

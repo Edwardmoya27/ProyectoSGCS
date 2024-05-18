@@ -13,14 +13,12 @@ import org.proyectosgcs.springcloud.msvc.medico.models.entity.Medico;
 import org.proyectosgcs.springcloud.msvc.medico.services.EspecialidadService;
 import org.proyectosgcs.springcloud.msvc.medico.services.MedicoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/medicos")
@@ -94,12 +92,21 @@ public class MedicoController {
     @PutMapping("/{id}")
     public ResponseEntity <? > editar (@RequestBody Medico medico, @PathVariable Long id, HttpServletRequest request) {
 
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                     "status", "error",
                     "message", "Acceso denegado"
             ));
         }
+
+        if(jwtAuthorizationHelper.validarRol(request, "MEDICO") && !Objects.equals(id, medico.getId()))
+            ResponseEntity.badRequest().body(
+                    Map.of(
+                            "status","error",
+                            "message","No puedes editar esta información"
+                    )
+            );
 
         Optional<Medico> op = service.obtenerMedico(id);
         if (op.isPresent()) {
@@ -130,34 +137,37 @@ public class MedicoController {
         return ResponseEntity.notFound().build();
     }
 
-
     //Metodos remotos
-
-    @GetMapping("/pacientes/{idPaciente}")
-    public ResponseEntity<?> obtenerPaciente(@PathVariable Long idPaciente){
-        Paciente pacienteApi = pacienteClientRest.obtenerPacientePorId(idPaciente);
-        if (pacienteApi.getId() == null){
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("error", "No existe el paciente con el ID "+idPaciente);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
-        }
-        Map<String, String> response = new HashMap<>();
-        response.put("nombre", pacienteApi.getNombres() + " " + pacienteApi.getApellidos());
-        return ResponseEntity.ok().body(response);
-    }
 
     //Listado de citas de un medico ID
     @GetMapping("/{idMedico}/citas")
-    public ResponseEntity<?> obtenerCitasIdMedico(@PathVariable Long idMedico){
+    public ResponseEntity<?> obtenerCitasIdMedico(
+            @PathVariable Long idMedico,
+            HttpServletRequest request,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+            ){
+
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
         Optional<Medico> medicoOptional = service.obtenerMedico(idMedico);
+
         if(medicoOptional.isEmpty())
-            return ResponseEntity.badRequest().body(Map.of("message","No existe el medico con el ID "+idMedico));
+            return ResponseEntity.badRequest().body(Map.of("message","No existe el médico"));
         List<Cita> listadoCitasIdMedicoApi = citaClientRest.obtenerCitasPorIdMedico(idMedico);
+
         if (listadoCitasIdMedicoApi.isEmpty()){
             Map<String, String> responseBody = new HashMap<>();
             responseBody.put("error", "No existen citas para el medico");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
         }
+
         return ResponseEntity.ok().body(listadoCitasIdMedicoApi);
     }
 
