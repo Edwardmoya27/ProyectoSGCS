@@ -1,6 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Controllers;
 
 import feign.FeignException;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Auth.JwtAuthorizationHelper;
@@ -33,30 +34,28 @@ public class PacienteController {
     @Autowired
     private JwtAuthorizationHelper jwtAuthorizationHelper;
 
+    @RolesAllowed({"ADMIN"})
     @GetMapping
-    public List<Paciente> listarPacientes(){
-        return pacienteService.listarPacientes();
+    public ResponseEntity<?> listarPacientes(){
+        return ResponseEntity.status(HttpStatus.OK).body(pacienteService.listarPacientes());
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPacientePorId(@PathVariable Long id, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
-                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
 
-        Optional<Paciente> PacienteOptional = pacienteService.buscarPorIdPaciente(id);
-        if(PacienteOptional.isPresent()) {
-            return ResponseEntity.ok(PacienteOptional.get());
-        }
-        return ResponseEntity.ok().body(Map.of("status", "error", "message",
-                "No existe paciente con el ID " + id));
+    @RolesAllowed({"ADMIN","MEDICO","PACIENTE"})
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPacientePorId(@PathVariable Long id){
+        Optional<Paciente> pacienteOptional = pacienteService.buscarPorIdPaciente(id);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error", "message", "Paciente no encontrado")
+            );
+        return ResponseEntity.status(HttpStatus.OK).body(pacienteOptional.get());
     }
+
+    @RolesAllowed({"ADMIN"})
     @PostMapping
-    public ResponseEntity<?> guardarPaciente(@Valid @RequestBody Paciente paciente, BindingResult result){
+    public ResponseEntity<?> crearPaciente(
+            @Valid @RequestBody Paciente paciente,
+            BindingResult result){
         try {
             if (result.hasErrors()) {
                 Map<String, String> errores = new HashMap<>();
@@ -73,61 +72,58 @@ public class PacienteController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> editarPaciente(@PathVariable Long id,@RequestBody Paciente paciente){
-        Optional<Paciente> o = pacienteService.buscarPorIdPaciente(id);
-        if(o.isPresent()) {
-            Paciente pacienteDB = o.get();
-            pacienteDB.setNombres(paciente.getNombres());
-            pacienteDB.setApellidos(paciente.getApellidos());
-            pacienteDB.setFechaNacimiento(paciente.getFechaNacimiento());
-            pacienteDB.setGenero(paciente.getGenero());
-            pacienteDB.setDireccion(paciente.getDireccion());
-            pacienteDB.setTelefono(paciente.getTelefono());
-            pacienteDB.setEmail(paciente.getEmail());
-            pacienteDB.setSeguroMedico(paciente.getSeguroMedico());
-            return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.guardarPaciente(pacienteDB));
-        }
-        return ResponseEntity.ok().body(Map.of("status", "error", "message",
-                "No existe paciente con el ID " + id));
+    @RolesAllowed({"ADMIN"})
+    @PutMapping("/{idPaciente}")
+    public ResponseEntity<?> editarPaciente(
+            @PathVariable Long idPaciente,
+            @RequestBody Paciente paciente){
+        Optional<Paciente> pacienteOptional = pacienteService.buscarPorIdPaciente(idPaciente);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error", "message", "Paciente no encontrado")
+            );
+        Paciente pacienteDB = pacienteOptional.get();
+        paciente.setId(idPaciente);
+        pacienteDB = paciente;
+        return ResponseEntity.status(HttpStatus.CREATED).body(pacienteService.guardarPaciente(pacienteDB));
     }
 
-    @DeleteMapping ("/{id}")
-    public ResponseEntity<?> eliminarPaciente(@PathVariable Long id){
-        Optional<Paciente> o = pacienteService.buscarPorIdPaciente(id);
-        if(o.isPresent()) {
-            pacienteService.eliminarPaciente(id);
-            return ResponseEntity.ok().body(Map.of("status", "ok", "message",
-                    "Se ha eliminado correctamente el paciente"));
-        }
-        return ResponseEntity.ok().body(Map.of("status", "error", "message",
-                "No existe paciente con el ID " + id));
+    @RolesAllowed({"ADMIN"})
+    @DeleteMapping ("/{idPaciente}")
+    public ResponseEntity<?> eliminarPaciente(@PathVariable Long idPaciente){
+        Optional<Paciente> pacienteOptional = pacienteService.buscarPorIdPaciente(idPaciente);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error", "message", "Paciente no encontrado")
+            );
+        pacienteService.eliminarPaciente(idPaciente);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                Map.of("status", "ok","message", "El paciente se ha eliminado correctamente")
+        );
+
     }
 
-
+    @RolesAllowed({"ADMIN"})
     @GetMapping("/dni/{dni}")
     public ResponseEntity<?> obtenerPacientePorDNI(@PathVariable String dni) {
         Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
         if (pacienteOptional.isEmpty())
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status","error",
-                    "message", "El paciente con el DNI " +dni+ " no se ha encontrado"));
-        return ResponseEntity.ok().body(pacienteOptional.get());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error", "message", "Paciente no encontrado")
+            );
+        return ResponseEntity.status(HttpStatus.OK).body(pacienteOptional.get());
     }
 
+    @RolesAllowed({"ADMIN"})
     //otros metodos
     @GetMapping("/citas/{dni}")
     public ResponseEntity<?> obtenerCitasPorDNI(@PathVariable String dni) {
-
-            //obtener todas las citas del paciente por su DNI
-            Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
-            if (!pacienteOptional.isPresent())
-                return ResponseEntity.ok().body(Map.of("status", "error", "message",
-                        "No existe paciente con el DNI " + dni));
-            Paciente pacienteDB = pacienteOptional.get();
-            List<Cita> citas = citasService.obtenerCitasPorIdPaciente(pacienteDB.getId());
-            return ResponseEntity.ok(citas);
-
+        Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error", "message", "Paciente no encontrado")
+            );
+        List<Cita> citas = citasService.obtenerCitasPorIdPaciente(pacienteOptional.get().getId());
+        return ResponseEntity.status(HttpStatus.OK).body(citas);
     }
-
 }

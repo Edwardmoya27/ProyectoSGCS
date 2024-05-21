@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @FeignClient(name = "citaClient", url = "localhost:8001/api/citas")
 public interface CitaClientRest {
-        @GetMapping("/{id}")
+    @GetMapping("/{id}")
     Optional<Cita> obtenerCitaPorId(@PathVariable Long id);
 }

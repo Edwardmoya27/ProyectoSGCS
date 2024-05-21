@@ -1,6 +1,7 @@
 package org.proyectosgcs.springcloud.msvc.atencionmedica.Clients;
 
 import org.proyectosgcs.springcloud.msvc.atencionmedica.Models.Pago;
+import org.proyectosgcs.springcloud.msvc.atencionmedica.config.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,11 @@ import java.util.Optional;
  * @created: 08/05/2024
  * @HoraCreated: 09:27 p. m.
  */
-@FeignClient(name = "pagoClient", url = "localhost:8003/api/pagos")
+
+//@FeignClient(name = "pagoClient", url = "localhost:8003/api/pagos", configuration = FeignClientConfig.class)
+@FeignClient(name = "pagoClient", url = "https://proyectosgcs-pago.onrender.com/api/pagos", configuration = FeignClientConfig.class)
+
+
 public interface PagoClientRest {
     @GetMapping("/{id}")
     Optional<Pago> obtenerPagoPorId(@PathVariable Long id);

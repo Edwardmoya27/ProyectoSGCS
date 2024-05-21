@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @FeignClient(name = "pacienteClient", url = "localhost:8001/api/pacientes")
 public interface PacienteClientRest {
-        @GetMapping("/{id}")
+    @GetMapping("/{id}")
     Optional<Paciente> obtenerPacientePorId(@PathVariable Long id);
 }
