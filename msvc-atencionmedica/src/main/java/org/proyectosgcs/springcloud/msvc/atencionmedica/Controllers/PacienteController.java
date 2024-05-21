@@ -103,7 +103,7 @@ public class PacienteController {
 
     }
 
-    @RolesAllowed({"ADMIN"})
+    @RolesAllowed({"ADMIN","PACIENTE"})
     @GetMapping("/dni/{dni}")
     public ResponseEntity<?> obtenerPacientePorDNI(@PathVariable String dni) {
         Optional<Paciente> pacienteOptional = pacienteService.obtenerPacientePorDni(dni);
@@ -114,7 +114,7 @@ public class PacienteController {
         return ResponseEntity.status(HttpStatus.OK).body(pacienteOptional.get());
     }
 
-    @RolesAllowed({"ADMIN"})
+    @RolesAllowed({"ADMIN","PACIENTE"})
     //otros metodos
     @GetMapping("/citas/{dni}")
     public ResponseEntity<?> obtenerCitasPorDNI(@PathVariable String dni) {
