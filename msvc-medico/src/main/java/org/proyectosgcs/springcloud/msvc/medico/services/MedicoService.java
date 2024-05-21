@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface MedicoService {
     List<Medico> listarMedicos();
-    Optional<Medico> obtenerMedico(Long id);
+    Optional<Medico> obtenerMedicoPorId(Long id);
     Medico registrarMedico(Medico medico);
     void eliminarMedico(Long id);
 

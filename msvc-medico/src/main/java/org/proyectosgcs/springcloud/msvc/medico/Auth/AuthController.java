@@ -12,16 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
-    private static String jwtSecret = "8p5sBZD84u2cP7wjM6YSZwTz0G2tP1qosKLKvIMgpJU";
+    private static String JWT_SECRET = "8p5sBZD84u2cP7wjM6YSZwTz0G2tP1qosKLKvIMgpJU";
     @Autowired
     private MedicoService medicoService;
 
@@ -40,17 +36,21 @@ public class AuthController {
                     "status", "error",
                     "message", "No se encuentra el médico. Por favor verifica tu DNI"
             ));
-        String token = generarTokenJWT(dni);
-        return ResponseEntity.ok(Map.of("token", token, "status","ok","data", medicoOptional.get()));
+        Medico medico = medicoOptional.get();
+        String token = generarTokenJWT(medico);
+        return ResponseEntity.ok(Map.of("token", token, "status","ok","data", medico));
     }
 
     // Método para generar un token JWT
-    private String generarTokenJWT(String dni) {
-        Claims claims = Jwts.claims().setSubject(dni);
-        claims.put("roles", List.of("PACIENTE"));
+    private String generarTokenJWT(Medico medico) {
+        Claims claims = Jwts.claims().setSubject(medico.getDni());
+        claims.put("roles", List.of("MEDICO"));
+        claims.put("medicoId", medico.getId());
         return Jwts.builder()
                 .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
+                .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
                 .compact();
     }
 }

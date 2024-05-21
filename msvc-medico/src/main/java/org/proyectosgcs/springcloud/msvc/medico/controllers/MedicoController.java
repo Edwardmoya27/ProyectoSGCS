@@ -1,19 +1,15 @@
 package org.proyectosgcs.springcloud.msvc.medico.controllers;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.proyectosgcs.springcloud.msvc.medico.Auth.JwtAuthorizationHelper;
+import feign.FeignException;
+import jakarta.annotation.security.RolesAllowed;
+import org.proyectosgcs.springcloud.msvc.medico.Auth.JwtTokenService;
 import org.proyectosgcs.springcloud.msvc.medico.Clients.CitaClientRest;
-import org.proyectosgcs.springcloud.msvc.medico.Clients.MedicamentoClientRest;
-import org.proyectosgcs.springcloud.msvc.medico.Clients.PacienteClientRest;
 import org.proyectosgcs.springcloud.msvc.medico.models.Cita;
-import org.proyectosgcs.springcloud.msvc.medico.models.Medicamento;
-import org.proyectosgcs.springcloud.msvc.medico.models.Paciente;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Especialidad;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Medico;
 import org.proyectosgcs.springcloud.msvc.medico.services.EspecialidadService;
 import org.proyectosgcs.springcloud.msvc.medico.services.MedicoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,172 +20,92 @@ import java.util.*;
 @RequestMapping("/api/medicos")
 public class MedicoController {
     @Autowired
-    private MedicoService service;
+    private MedicoService medicoService;
     @Autowired
     private EspecialidadService especialidadService;
     @Autowired
-    private PacienteClientRest pacienteClientRest;
-    @Autowired
     private CitaClientRest citaClientRest;
     @Autowired
-    private MedicamentoClientRest medicamentoClientRest;
+    private JwtTokenService jwtTokenService;
 
-    @Autowired
-    private JwtAuthorizationHelper jwtAuthorizationHelper;
-
+    @RolesAllowed({"ADMIN"})
     @GetMapping
-    public ResponseEntity<?> listar(HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-
-        return ResponseEntity.ok().body(service.listarMedicos());
+    public ResponseEntity<?> listar(){
+        return ResponseEntity.ok().body(medicoService.listarMedicos());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> detalle(@PathVariable Long id, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
-                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-        Optional<Medico> medicoOptional = service.obtenerMedico(id);
-        if(medicoOptional.isEmpty())
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "status", "error",
-                    "message", "El médico con el ID " + id + " no existe"
-            ));
-        return ResponseEntity.ok(medicoOptional.get());
-    }
-
-    @PostMapping
-    public ResponseEntity<?> crear (@RequestBody Medico medico, HttpServletRequest request){
-
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        Optional<Especialidad> optionalEspecialidad = especialidadService.obtenerEspecialidad(medico.getEspecialidad().getId());
-        if (optionalEspecialidad.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarMedico(medico));
-        } else {
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("error", "La especialidad no existe");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity <? > editar (@RequestBody Medico medico, @PathVariable Long id, HttpServletRequest request) {
-
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        if(jwtAuthorizationHelper.validarRol(request, "MEDICO") && !Objects.equals(id, medico.getId()))
-            ResponseEntity.badRequest().body(
-                    Map.of(
-                            "status","error",
-                            "message","No puedes editar esta información"
-                    )
+    @RolesAllowed({"ADMIN","MEDICO","PACIENTE"})
+    @GetMapping("/{idMedico}")
+    public ResponseEntity<?> obtenerMedicoPorId(@PathVariable Long idMedico){
+        Optional<Medico> medicoOptional = medicoService.obtenerMedicoPorId(idMedico);
+        if (medicoOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "Médico no encontrado")
             );
-
-        Optional<Medico> op = service.obtenerMedico(id);
-        if (op.isPresent()) {
-            Medico medicoDb = op.get();
-            medicoDb.setNombres(medico.getNombres());
-            medicoDb.setApellidos(medico.getApellidos());
-            medicoDb.setFechaNacimiento(medico.getFechaNacimiento());
-            medicoDb.setEspecialidad(medico.getEspecialidad());
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarMedico(medicoDb));
-        }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.OK).body(medicoOptional.get());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
+    @RolesAllowed({"ADMIN"})
+    @PostMapping
+    public ResponseEntity<?> crearMedico(@RequestBody Medico medico){
+        Optional<Especialidad> especialidadOptional = especialidadService.obtenerEspecialidad(medico.getEspecialidad().getId());
+        if(especialidadOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "La especialidad no existe. Por favor vuelva a verificar")
+            );
+        return ResponseEntity.status(HttpStatus.CREATED).body(medicoService.registrarMedico(medico));
+    }
 
-        Optional<Medico> op = service.obtenerMedico(id);
-        if (op.isPresent()){
-            service.eliminarMedico(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @RolesAllowed({"ADMIN","MEDICO"})
+    @PutMapping("/{idMedico}")
+    public ResponseEntity<?> editarMedico(@RequestBody Medico medico, @PathVariable Long idMedico) {
+        Optional<Medico> medicoOptional = medicoService.obtenerMedicoPorId(idMedico);
+        if(medicoOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "El médico no existe")
+            );
+        Medico medicoDB = medicoOptional.get();
+        medico.setId(idMedico);
+        medicoDB = medico;
+        return ResponseEntity.status(HttpStatus.CREATED).body(medicoService.registrarMedico(medicoDB));
+    }
+
+    @RolesAllowed({"ADMIN"})
+    @DeleteMapping("/{idMedico}")
+    public ResponseEntity<?> eliminarMedico(@PathVariable Long idMedico){
+        Optional<Medico> medicoOptional = medicoService.obtenerMedicoPorId(idMedico);
+        if(medicoOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "El médico no existe")
+            );
+        medicoService.eliminarMedico(idMedico);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                Map.of("status", "ok","message", "El médico se ha eliminado correctamente")
+        );
     }
 
     //Metodos remotos
 
     //Listado de citas de un medico ID
+
+    @RolesAllowed({"ADMIN", "MEDICO"})
     @GetMapping("/{idMedico}/citas")
-    public ResponseEntity<?> obtenerCitasIdMedico(
-            @PathVariable Long idMedico,
-            HttpServletRequest request,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
-            ){
-
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO") &&
-                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        Optional<Medico> medicoOptional = service.obtenerMedico(idMedico);
-
+    public ResponseEntity<?> obtenerCitasIdMedico(@PathVariable Long idMedico, @RequestHeader("Authorization") String token){
+        Optional<Medico> medicoOptional = medicoService.obtenerMedicoPorId(idMedico);
         if(medicoOptional.isEmpty())
-            return ResponseEntity.badRequest().body(Map.of("message","No existe el médico"));
-        List<Cita> listadoCitasIdMedicoApi = citaClientRest.obtenerCitasPorIdMedico(idMedico);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "El médico no existe")
+            );
 
-        if (listadoCitasIdMedicoApi.isEmpty()){
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("error", "No existen citas para el medico");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
-        }
-
-        return ResponseEntity.ok().body(listadoCitasIdMedicoApi);
-    }
-
-    @GetMapping("/citas/{idCita}")
-    public ResponseEntity<?> obtenerCitaIdPaciente(@PathVariable Long idCita){
-        Cita citaApi = citaClientRest.obtenerCitaPorId(idCita);
-        if (citaApi.getId() == null){
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("error", "No existe la cita con el ID "+idCita);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
-        }
-        return ResponseEntity.ok().body(citaApi);
-    }
-
-
-    @GetMapping("/medicamentos")
-    public ResponseEntity<?> obtenerLstadoMedicamentos(){
         try {
-            List<Medicamento> medicamentoList = medicamentoClientRest.obtenerListadoMedicamentos();
-            return ResponseEntity.ok().body(medicamentoList);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Hay un error en la conexion con el microservicio"));
+            jwtTokenService.setToken(token.replace("Bearer ", ""));
+            List<Cita> listadoCitasIdMedicoApi = citaClientRest.obtenerCitasPorIdMedico(idMedico);
+            jwtTokenService.clearToken();
+            return ResponseEntity.ok().body(listadoCitasIdMedicoApi);
+        }catch (FeignException exception){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "Error al conectar con el microservicio Gestion de Citas", "data", exception.getMessage())
+            );
         }
     }
 

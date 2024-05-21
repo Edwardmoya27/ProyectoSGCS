@@ -3,8 +3,6 @@ package org.proyectosgcs.springcloud.msvc.medico.Auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -31,4 +29,14 @@ public class JwtAuthorizationHelper {
         boolean resultado = roles.contains(rol);
         return resultado;
     }
+
+    public String getDniFromToken(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("dni", String.class);
+    }
+
 }

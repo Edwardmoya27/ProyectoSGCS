@@ -20,7 +20,7 @@ public class MedicoServiceImpl implements MedicoService{
     }
 
     @Override
-    public Optional<Medico> obtenerMedico(Long id) {
+    public Optional<Medico> obtenerMedicoPorId(Long id) {
         return repository.findById(id);
     }
 

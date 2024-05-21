@@ -178,24 +178,8 @@ public class CitasController {
     }
 
     @GetMapping("/medico/{idMedico}")
-    public ResponseEntity<?> listarCitasPorIdMedico(@PathVariable Long idMedico, HttpServletRequest request){
-
-        //Verificar token de acceso con rol ADMIN
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
-                !jwtAuthorizationHelper.validarRol(request, "MEDICO")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        Optional<Medico> medicoOptional = medicoClientRest.obtenerMedicoPorId(idMedico);
-        if (medicoOptional.isEmpty())
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status","error", "message", "El médico no existe"));
-
+    public ResponseEntity<?> listarCitasPorIdMedico(@PathVariable Long idMedico){
         return ResponseEntity.ok().body(citasService.obtenerCitasPorIdMedico(idMedico));
-
     }
     @GetMapping("/pacientes/{idPaciente}")
     public ResponseEntity<?> listarCitasPorIdPaciente(@PathVariable Long idPaciente, HttpServletRequest request){

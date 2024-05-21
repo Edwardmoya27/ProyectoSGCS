@@ -1,8 +1,10 @@
 package org.proyectosgcs.springcloud.msvc.medico.controllers;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.proyectosgcs.springcloud.msvc.medico.Auth.JwtAuthorizationHelper;
 import org.proyectosgcs.springcloud.msvc.medico.models.entity.Especialidad;
+import org.proyectosgcs.springcloud.msvc.medico.models.entity.Medico;
 import org.proyectosgcs.springcloud.msvc.medico.services.EspecialidadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,82 +20,57 @@ import java.util.Optional;
 public class EspecialidadController {
 
     @Autowired
-    private EspecialidadService service;
-    @Autowired
-    private JwtAuthorizationHelper jwtAuthorizationHelper;
+    private EspecialidadService especialidadService;
 
+    @RolesAllowed({"ADMIN"})
     @GetMapping
     public ResponseEntity<?> listar(HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-        return ResponseEntity.ok(service.listarEspecialidades());
+        return ResponseEntity.status(HttpStatus.OK).body(especialidadService.listarEspecialidades());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> detalle(@PathVariable Long id, HttpServletRequest request){
-
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        Optional<Especialidad> especialidadOptional = service.obtenerEspecialidad(id);
-        if (especialidadOptional.isPresent()){
-            return ResponseEntity.ok(especialidadOptional.get());
-        }
-        return ResponseEntity.notFound().build();
+    @RolesAllowed({"ADMIN"})
+    @GetMapping("/{idEspecialidad}")
+    public ResponseEntity<?> obtenerEspecialidadPorId(@PathVariable Long idEspecialidad){
+        Optional<Especialidad> especialidadOptional = especialidadService.obtenerEspecialidad(idEspecialidad);
+        if (especialidadOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "Especialidad no encontrada")
+            );
+        return ResponseEntity.status(HttpStatus.OK).body(especialidadOptional.get());
     }
 
+    @RolesAllowed({"ADMIN"})
     @PostMapping
-    public ResponseEntity<?> crear (@RequestBody Especialidad especialidad, HttpServletRequest request){
-
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarEspecialidad(especialidad));
+    public ResponseEntity<?> crearEspecialidad(@RequestBody Especialidad especialidad){
+        return ResponseEntity.status(HttpStatus.CREATED).body(especialidadService.registrarEspecialidad(especialidad));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity <? > editar (@RequestBody Especialidad especialidad, @PathVariable Long id, HttpServletRequest request) {
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-        Optional<Especialidad> op = service.obtenerEspecialidad(id);
-        if (op.isPresent()) {
-            Especialidad especialidadDb = op.get();
-            especialidadDb.setNombre(especialidad.getNombre());
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrarEspecialidad(especialidad));
-        }
-        return ResponseEntity.notFound().build();
+    @RolesAllowed({"ADMIN"})
+    @PutMapping("/{idEspecialidad}")
+    public ResponseEntity <?> editarEspecialidad(@RequestBody Especialidad especialidad, @PathVariable Long idEspecialidad) {
+        Optional<Especialidad> especialidadOptional = especialidadService.obtenerEspecialidad(idEspecialidad);
+        if(especialidadOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "Especialidad no encontrada")
+            );
+        Especialidad especialidadDB = especialidadOptional.get();
+        especialidad.setId(idEspecialidad);
+        especialidadDB = especialidad;
+        return ResponseEntity.status(HttpStatus.CREATED).body(especialidadService.registrarEspecialidad(especialidadDB));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpServletRequest request){
-        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                    "status", "error",
-                    "message", "Acceso denegado"
-            ));
-        }
-        Optional<Especialidad> op = service.obtenerEspecialidad(id);
-        if (op.isPresent()){
-            service.eliminarEspecialidad(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @RolesAllowed({"ADMIN"})
+    @DeleteMapping("/{idEspecialidad}")
+    public ResponseEntity<?> eliminarEspecialidad(@PathVariable Long idEspecialidad, HttpServletRequest request){
+        Optional<Especialidad> especialidadOptional = especialidadService.obtenerEspecialidad(idEspecialidad);
+        if(especialidadOptional.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    Map.of("status", "error","message", "Especialidad no encontrada")
+            );
+        especialidadService.eliminarEspecialidad(idEspecialidad);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                Map.of("status", "ok","message", "La especialidad se ha eliminado correctamente")
+        );
     }
 
 }
