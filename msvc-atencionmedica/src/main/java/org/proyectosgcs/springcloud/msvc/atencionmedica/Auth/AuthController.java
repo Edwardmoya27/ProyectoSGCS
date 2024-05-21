@@ -78,7 +78,7 @@ public class AuthController {
 
     private String generarTokenJWTPaciente(Paciente paciente) {
         Claims claims = Jwts.claims().setSubject(paciente.getDni());
-        claims.put("roles", List.of("MEDICO"));
+        claims.put("roles", List.of("PACIENTE"));
         claims.put("pacienteId", paciente.getId());
         return Jwts.builder()
                 .setClaims(claims)
