@@ -197,5 +197,25 @@ public class CitasController {
         return ResponseEntity.ok().body(citasService.obtenerCitasPorIdMedico(idMedico));
 
     }
+    @GetMapping("/pacientes/{idPaciente}")
+    public ResponseEntity<?> listarCitasPorIdPaciente(@PathVariable Long idPaciente, HttpServletRequest request){
+
+        //Verificar token de acceso con rol Paciente
+        if (!jwtAuthorizationHelper.validarRol(request, "ADMIN") &&
+                !jwtAuthorizationHelper.validarRol(request, "PACIENTE")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "status", "error",
+                    "message", "Acceso denegado"
+            ));
+        }
+
+        Optional<Paciente> pacienteOptional = pacienteService.buscarPorIdPaciente(idPaciente);
+        if (pacienteOptional.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status","error", "message", "El paciente no existe"));
+
+        return ResponseEntity.ok().body(citasService.obtenerCitasPorIdPaciente(idPaciente));
+
+    }
 
 }
