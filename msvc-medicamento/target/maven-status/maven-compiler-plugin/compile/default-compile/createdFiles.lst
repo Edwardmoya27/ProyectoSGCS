@@ -1,0 +1,13 @@
+org\proyectsgcs\springcloud\msvc\medicamento\services\MedicamentoServiceImp.class
+org\proyectsgcs\springcloud\msvc\medicamento\repositories\MedicamentoRepository.class
+org\proyectsgcs\springcloud\msvc\medicamento\controllers\MedicamentoController.class
+org\proyectsgcs\springcloud\msvc\medicamento\repositories\CategoriaRepository.class
+org\proyectsgcs\springcloud\msvc\medicamento\services\MedicamentoService.class
+org\proyectsgcs\springcloud\msvc\medicamento\services\CategoriaService.class
+org\proyectsgcs\springcloud\msvc\medicamento\Auth\AuthController.class
+org\proyectsgcs\springcloud\msvc\medicamento\models\entity\Categoria.class
+org\proyectsgcs\springcloud\msvc\medicamento\models\entity\Medicamento.class
+org\proyectsgcs\springcloud\msvc\medicamento\Auth\JwtAuthorizationHelper.class
+org\proyectsgcs\springcloud\msvc\medicamento\services\CategoriaServiceImp.class
+org\proyectsgcs\springcloud\msvc\medicamento\MsvcMedicamentoApplication.class
+org\proyectsgcs\springcloud\msvc\medicamento\controllers\CategoriaController.class

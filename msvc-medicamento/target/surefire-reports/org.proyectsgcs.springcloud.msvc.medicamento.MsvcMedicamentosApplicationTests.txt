@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: org.proyectsgcs.springcloud.msvc.medicamento.MsvcMedicamentosApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.936 s -- in org.proyectsgcs.springcloud.msvc.medicamento.MsvcMedicamentosApplicationTests
